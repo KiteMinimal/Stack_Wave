@@ -5,11 +5,11 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 
 const userSchema = new mongoose.Schema({
-    name: {
+    username: {
         type: String,
         trim: true,
-        required: [true, "name is required"],
-        unique: [true, "name is already taken"],
+        required: [true, "username is required"],
+        unique: [true, "username is already taken"],
         minLength: "3",
         maxLength: "15",
     },

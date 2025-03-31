@@ -8,9 +8,11 @@ app.use(express.urlencoded({extended: true}));
 app.use(cors())
 
 const authRoutes = require("./routes/auth.routes");
-const questionRoutes = require("./routes/question.routes")
+const userRoutes = require("./routes/user.routes");
+const questionRoutes = require("./routes/question.routes");
 
 app.use("/api/auth", authRoutes)
+app.use("/api/users", userRoutes)
 app.use("/api/questions", questionRoutes)
 
 module.exports = app;
