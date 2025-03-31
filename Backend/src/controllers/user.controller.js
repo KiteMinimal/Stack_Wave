@@ -60,6 +60,12 @@ const updateUserController = async function(req,res){
             }
         })
 
+        if(updates?.bio && updates.bio.length > 100){
+            return res.status(400).json({
+                message: "Bio should less than 100 characters"
+            })
+        }
+
         const user = await userModel.findByIdAndUpdate(id, updates, { new: true, runValidators: true })
 
         if(!user){

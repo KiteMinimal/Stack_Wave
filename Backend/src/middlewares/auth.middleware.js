@@ -31,7 +31,7 @@ const userAuth = async function(req,res,next){
 }
 
 const signUpValidations = [
-    body("name")
+    body("username")
         .notEmpty().withMessage("Name is required")
         .isLength({ min: 3, max: 15 }).withMessage("Name must be between 3 to 15 characters"),
 
@@ -47,6 +47,10 @@ const signUpValidations = [
         .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
         .matches(/[0-9]/).withMessage("Password must contain at least one number")
         .matches(/[\W]/).withMessage("Password must contain at least one special character"),
+
+    body("bio")
+        .optional()
+        .isLength({min: 5, max:100}).withMessage("Bio should be less than 100 characters"),
 
     (req, res, next) => {
         const errors = validationResult(req);
