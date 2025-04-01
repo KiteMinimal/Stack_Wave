@@ -42,11 +42,7 @@ const signUpValidations = [
 
     body("password")
         .notEmpty().withMessage("Password is required")
-        .isLength({ min: 6 }).withMessage("Password must be at least 6 characters")
-        .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter")
-        .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
-        .matches(/[0-9]/).withMessage("Password must contain at least one number")
-        .matches(/[\W]/).withMessage("Password must contain at least one special character"),
+        .isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
 
     body("bio")
         .optional()
@@ -69,11 +65,7 @@ const loginValidation = [
 
     body("password")
         .notEmpty().withMessage("Password is required")
-        .isLength({ min: 6 }).withMessage("Password must be at least 6 characters")
-        .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter")
-        .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
-        .matches(/[0-9]/).withMessage("Password must contain at least one number")
-        .matches(/[\W]/).withMessage("Password must contain at least one special character"),
+        .isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
 
     (req, res, next) => {
         const errors = validationResult(req);
