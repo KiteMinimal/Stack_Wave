@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../utils/constants";
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -19,30 +20,36 @@ const Login = () => {
     axios.post(BASE_URL + "/api/auth/login", {email,password})
     .then((res) => {
       let {user,token,message} = res?.data;
+      toast.success(message);
       localStorage.setItem("token", token);
       navigate("/");
     })
     .catch((err) => {
       let {message, errors} = err?.response?.data;
       if(message){
+        toast.error(message);
         setError(message);
       }else{
+        toast.error(errors[0].msg);
         setError(errors[0].msg)
       }
     })
   }
 
   const handleRegister = () => {
+    if(username.length <= 0 && email.length <= 0 && password.length <= 0) return;
     setError("")
     axios.post(BASE_URL + "/api/auth/signUp", {username,email,password})
     .then((res) => {
       let {user,token,message} = res?.data;
+      toast.success(message);
       localStorage.setItem("token", token);
       navigate("/");
     })
     .catch((err) => {
       let {message, errors} = err?.response?.data;
       if(message){
+        toast.error(message);
         setError(message);
       }else{
         setError(errors[0].msg)
