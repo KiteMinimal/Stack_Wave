@@ -44,7 +44,7 @@ const Login = () => {
       let {user,token,message} = res?.data;
       toast.success(message);
       localStorage.setItem("token", token);
-      navigate("/");
+      navigate("/verify");
     })
     .catch((err) => {
       let {message, errors} = err?.response?.data;

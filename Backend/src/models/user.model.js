@@ -19,11 +19,14 @@ const userSchema = new mongoose.Schema({
         required: [true, "email is required"],
         unique: [true, "email is already taken"],
         minLength: "3",
-        maxLength: "15",
     },
     password: {
         type: String,
         select: false,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     },
     bio: {
         type: String,
@@ -42,7 +45,15 @@ const userSchema = new mongoose.Schema({
     bages: {
         type: [String],
         default: []
-    }
+    },
+    otp: {
+        type: String,
+        default: null
+    },
+    otpExpiary: {
+        type: String,
+        default: null
+    },
 })
 
 userSchema.statics.hashPassword = async function(password){

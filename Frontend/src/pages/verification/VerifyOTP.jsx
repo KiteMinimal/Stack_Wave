@@ -1,5 +1,9 @@
 
+import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react'
+import { BASE_URL } from '../../utils/constants';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const VerifyOTP = () => {
 
@@ -7,6 +11,7 @@ const VerifyOTP = () => {
     const [input,setInput] = useState(otpLength);
     const ref = useRef([]);
     const [timer, setTimer] = useState(30);
+    const navigate = useNavigate();
 
     const OnchangeHandler = (value,idx) => {
         if(isNaN(value)) return;
@@ -32,10 +37,29 @@ const VerifyOTP = () => {
     }, [timer]);
 
     const onKeyDownHandler = (e,idx) => {
-        console.log(e.key);
-        if(e.key === "Backspace" && !input[idx]){
-            ref.current[idx - 1].focus();
+        if(e.key === "Backspace" && !input[idx] && idx >= 0){
+            ref.current[idx - 1]?.focus();
         }
+    }
+
+    const handleSubmitOTP = () => {
+        if(!input[0]) return;
+        axios.post(BASE_URL + "/api/auth/verify", {otp: input.join("")},{
+            headers: { Authorization: `bearer ${localStorage.getItem("token")}`}
+        })
+        .then((res) => {
+            toast(res?.data?.message)
+            navigate("/")
+            console.log(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    }
+
+
+    const handleResendOTP = () => {
+        console.log("rsend OTP");
     }
 
 
@@ -51,7 +75,9 @@ const VerifyOTP = () => {
                             type="text"
                             key={idx}
                             maxLength={1}
-                            className='w-10 h-10 md:w-12 md:h-12 text-center text-3xl text-fuchsia-400 font-semibold rounded border border-fuchsia-700 outline-fuchsia-600'
+                            className="w-10 h-10 md:w-14 md:h-14 text-center text-2xl font-bold rounded-lg border-2 
+                            border-purple-500 focus:border-purple-600 focus:ring-2 focus:ring-purple-300 outline-none 
+                            transition-all duration-200 ease-in-out shadow-md"
                             value={input[idx]}
                             onChange={(e) => OnchangeHandler(e.target.value, idx)}
                             onKeyDown={(e) => onKeyDownHandler(e,idx)}
@@ -60,7 +86,17 @@ const VerifyOTP = () => {
                 }
             </div>
             <div className='text-center mt-5'>
-                {timer > 0 ? <p>Resend OTP in <strong>{timer}</strong> seconds</p> : <button className='cursor-pointer px-4 py-2 rounded bg-cyan-500 text-white font-semibold'>Resend OTP</button>}
+
+                <button onClick={handleSubmitOTP} className='px-6 py-2 bg-purple-500 hover:bg-purple-600 transition-all duration-200 text-white font-semibold rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400'>
+                    Submit
+                </button>
+
+                { timer > 0 ? <p className='mt-4'>Resend OTP in <strong>{timer}</strong> seconds</p> : 
+                    <button onClick={handleResendOTP} className='mx-4 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition-alltext-white font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400'>
+                        Resend OTP
+                    </button>
+                }
+
             </div>
         </div>
     </div>

@@ -1,5 +1,7 @@
 
 const userModel = require("../models/user.model");
+const generateOTP = require("../utils/generateOTP");
+const sendOTP = require("../utils/sendOTP");
 
 const signUpController = async function(req,res){
     try{
@@ -18,17 +20,37 @@ const signUpController = async function(req,res){
             })
         }
 
+        
+        const otp = generateOTP();
+        const otpExpiary = Date.now() + 5 * 60 * 1000;
+        
+        await sendOTP({
+            to: email,
+            subject: "Stack_Wave Email Verification Code",
+            html: `<div style="max-width: 400px; margin: auto; background: #222; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #00c8ff;">StackWave Verification Code</h2>
+            <p style="font-size: 16px; color: #bbbbbb;">Use this OTP to verify your email:</p>
+            <div style=" font-size: 24px; font-weight: bold; color: #ffcc00; background: #333; padding: 10px; border-radius: 5px; letter-spacing: 3px;">${otp}</div>
+                <p style="margin-top: 10px;"> This OTP expires in 5 minutes. </p>
+            </div>`
+        })
+
         const hashedPassword = await userModel.hashPassword(password);
+        // otp = await userModel.hashPassword(otp);
 
         const user = await userModel.create({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            otp,
+            otpExpiary
         })
 
         const token = user.generateToken();
 
         delete user._doc.password
+        delete user._doc.otp
+        delete user._doc.otpExpiary
 
         res.status(201).json({
             user,
@@ -69,6 +91,8 @@ const loginController = async function(req,res){
         const token = user.generateToken();
 
         delete user._doc.password
+        delete user._doc.otp
+        delete user._doc.otpExpiary
 
         res.status(200).json({
             user,
@@ -96,6 +120,9 @@ const profileController = async function(req,res){
 
         const user = await userModel.findById(_id);
 
+        delete user._doc.otp
+        delete user._doc.otpExpiary
+
         res.status(200).json({
             user
         })
@@ -108,8 +135,53 @@ const profileController = async function(req,res){
     }
 }
 
+const verifyController = async function(req,res){
+    try{
+        const otp = req.body.otp;
+        const userId = req.user._id;
+
+        console.log(otp);
+        
+
+        const user = await userModel.findById(userId);
+        if(!user){
+            res.status(401).json({ message: "Unauthorized" })
+        }
+
+        if(Date.now() > user.otpExpiary){
+            return res.status(400).json({
+                message: "Otp is expired"
+            })
+        }
+
+        if(otp !== user.otp){
+            return res.status(400).json({
+                message: "Invalid OTP"
+            })
+        }
+
+        user.isVerified = true;
+        await user.save();
+
+        delete user._doc.otp
+        delete user._doc.otpExpiary
+
+        res.status(200).json({
+            user,
+            message: "User verified successfully"
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     signUpController,
     loginController,
-    profileController
+    profileController,
+    verifyController
 }
