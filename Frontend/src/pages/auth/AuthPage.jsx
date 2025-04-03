@@ -1,9 +1,11 @@
-
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../utils/constants";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import { GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { addUser } from "../../store/userSlice";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -11,51 +13,79 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
+
   const handleLogin = () => {
-    if(email.length <= 0 && password.length <= 0) return;
-    setError("")
-    axios.post(BASE_URL + "/api/auth/login", {email,password})
-    .then((res) => {
-      let {user,token,message} = res?.data;
-      toast.success(message);
-      localStorage.setItem("token", token);
-      navigate("/");
-    })
-    .catch((err) => {
-      let {message, errors} = err?.response?.data;
-      if(message){
-        toast.error(message);
-        setError(message);
-      }else{
-        toast.error(errors[0].msg);
-        setError(errors[0].msg)
-      }
-    })
-  }
+    if (email.length <= 0 && password.length <= 0) return;
+    setError("");
+    axios
+      .post(BASE_URL + "/api/auth/login", { email, password })
+      .then((res) => {
+        let { user, token, message } = res?.data;
+        toast.success(message);
+        localStorage.setItem("token", token);
+        navigate("/");
+      })
+      .catch((err) => {
+        let { message, errors } = err?.response?.data;
+        if (message) {
+          toast.error(message);
+          setError(message);
+        } else {
+          toast.error(errors[0].msg);
+          setError(errors[0].msg);
+        }
+      });
+  };
 
   const handleRegister = () => {
-    if(username.length <= 0 && email.length <= 0 && password.length <= 0) return;
-    setError("")
-    axios.post(BASE_URL + "/api/auth/signUp", {username,email,password})
-    .then((res) => {
-      let {user,token,message} = res?.data;
-      toast.success(message);
-      localStorage.setItem("token", token);
-      navigate("/verify");
-    })
-    .catch((err) => {
-      let {message, errors} = err?.response?.data;
-      if(message){
-        toast.error(message);
-        setError(message);
-      }else{
-        setError(errors[0].msg)
-      }
-    })
-  }
+    if (username.length <= 0 && email.length <= 0 && password.length <= 0)
+      return;
+    setError("");
+    axios
+      .post(BASE_URL + "/api/auth/signUp", { username, email, password })
+      .then((res) => {
+        let { user, token, message } = res?.data;
+        toast.success(message);
+        localStorage.setItem("token", token);
+        navigate("/verify");
+      })
+      .catch((err) => {
+        let { message, errors } = err?.response?.data;
+        if (message) {
+          toast.error(message);
+          setError(message);
+        } else {
+          setError(errors[0].msg);
+        }
+      });
+  };
+
+  const handleGoogleLogin = (credential) => {
+    axios
+      .post(BASE_URL + "/api/auth/google-login", { credential })
+      .then((res) => {
+        const {token,user,message} = res.data;
+        localStorage.setItem("token",token)
+        dispatch(addUser({user,token}))
+        toast(message)
+        console.log(res);
+        navigate("/");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // const googleLogin = () => <GoogleLogin
+  // onSuccess={(response) => {
+  //   console.log("Google Response:", response);
+  //   handleGoogleLogin(response.credential);
+  // }}
+  // onError={() => toast("Google Login Failed...!")}
+  // />
 
   return (
     <main className="w-full h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -65,7 +95,7 @@ const Login = () => {
         </h2>
 
         <div className="flex items-center justify-center flex-col gap-5 mt-10">
-          { !isLogin && (
+          {!isLogin && (
             <div className="input-group w-full flex flex-col">
               <label className="input validator w-full">
                 <svg
@@ -179,41 +209,58 @@ const Login = () => {
               {isLogin
                 ? "Don't have an account? "
                 : "Already have an account? "}
-              <p onClick={() => setIsLogin(!isLogin)} className="text-fuchsia-700">
+              <p
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-fuchsia-700"
+              >
                 {isLogin ? "Register" : "Login"}
               </p>
             </div>
           </div>
 
           {isLogin ? (
-            <button onClick={handleLogin} className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4">
+            <button
+              onClick={handleLogin}
+              className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4"
+            >
               login
             </button>
           ) : (
-            <button onClick={handleRegister} className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4">
+            <button
+              onClick={handleRegister}
+              className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4"
+            >
               Register
             </button>
           )}
 
           <div className="w-full flex items-center justify-center gap-5 mt-5">
-
             <div className="btn w-fit bg-black text-white border-black">
-                <svg
-                  aria-label="GitHub logo"
-                  width="16"
-                  height="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="white"
-                    d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"
-                  ></path>
-                </svg>
-                Github
+              <svg
+                aria-label="GitHub logo"
+                width="16"
+                height="16"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="white"
+                  d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"
+                ></path>
+              </svg>
+              Github
             </div>
 
-            <div className="btn w-fit bg-white text-black border-[#e5e5e5]">
+            <div className="w-fit font-semibold">
+              <GoogleLogin
+                onSuccess={(response) => {
+                  console.log("Google Response:", response);
+                  handleGoogleLogin(response.credential);
+                }}
+                onError={() => toast("Google Login Failed...!")}
+              />
+            </div>
+            {/* <div onClick={googleLogin} className="btn w-fit bg-white text-black border-[#e5e5e5]">
               <svg
                 aria-label="Google logo"
                 width="16"
@@ -242,7 +289,7 @@ const Login = () => {
                 </g>
               </svg>
               Google
-            </div>
+            </div> */}
           </div>
         </div>
 

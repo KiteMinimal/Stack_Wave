@@ -2,6 +2,7 @@
 const userModel = require("../models/user.model");
 const generateOTP = require("../utils/generateOTP");
 const sendOTP = require("../utils/sendOTP");
+const axios = require("axios");
 
 const signUpController = async function(req,res){
     try{
@@ -179,9 +180,44 @@ const verifyController = async function(req,res){
     }
 }
 
+const googleLoginController = async function(req,res){
+    try{
+        const { credential } = req.body;
+        const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        console.log(googleResponse.data);
+        const {email,name,picture} = googleResponse.data;
+
+        let user = await userModel.findOne({email});
+
+        if(!user){
+            user = await userModel.create({
+                username: name,
+                email,
+                isVerified: true,
+                avatar: picture
+            })
+        }
+
+        const token = user.generateToken();
+
+        res.status(200).json({
+            user,
+            token,
+            message: "User login successfully"
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     signUpController,
     loginController,
     profileController,
-    verifyController
+    verifyController,
+    googleLoginController
 }

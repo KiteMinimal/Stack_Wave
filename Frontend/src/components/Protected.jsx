@@ -34,7 +34,7 @@ const Protected = ({children}) => {
         if(user && !user?.isVerified){
             return navigate("/auth")
         }
-    },[dispatch,navigate])
+    },[user])
 
 
   return children;
