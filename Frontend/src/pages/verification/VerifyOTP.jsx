@@ -5,6 +5,7 @@ import { BASE_URL } from '../../utils/constants';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import Loading from '../../components/Loading';
 
 const VerifyOTP = () => {
 
@@ -12,6 +13,7 @@ const VerifyOTP = () => {
     const [input,setInput] = useState(otpLength);
     const ref = useRef([]);
     const [timer, setTimer] = useState(60);
+    const [loading,setLoading] = useState(false);
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.user)
     
@@ -57,16 +59,23 @@ const VerifyOTP = () => {
         })
         .catch((err) => {
             console.log(err);
+            toast.error(err.response.data.message)
         })
     }
 
 
     const handleResendOTP = () => {
+        setLoading(true);
         axios.post(BASE_URL + "/api/auth/resend-otp", {email: user.email})
         .then((res) => {
+            setLoading(false);
             console.log(res);
+            toast.success(res.data.message)
+            setTimer(60);
         })
         .catch((err) => {
+            setLoading(false);
+            toast.error(err.response.data.message)
             console.log(err);
         })
     }
@@ -100,9 +109,9 @@ const VerifyOTP = () => {
                     Submit
                 </button>
 
-                { timer > 0 ? <p className='mt-4'>Resend OTP in <strong>{timer}</strong> seconds</p> : 
+                { timer > 0 ? <p className='mt-4'>OTP expires in <strong>{timer}</strong> seconds</p> : 
                     <button onClick={handleResendOTP} className='mx-4 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition-alltext-white font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400'>
-                        Resend OTP
+                        {loading ? <Loading/> : "Resend OTP"}
                     </button>
                 }
 

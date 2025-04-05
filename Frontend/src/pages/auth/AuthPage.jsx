@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useDispatch } from "react-redux";
 import { addUser } from "../../store/userSlice";
+import Loading from "../../components/Loading";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -13,6 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(true);
+  const [loading,setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -44,15 +46,18 @@ const Login = () => {
     if (username.length <= 0 && email.length <= 0 && password.length <= 0)
       return;
     setError("");
+    setLoading(true);
     axios
       .post(BASE_URL + "/api/auth/signUp", { username, email, password })
       .then((res) => {
         let { user, message } = res?.data;
         dispatch(addUser({user,token: null}))
         toast.success(message);
+        setLoading(false);
         navigate("/verify");
       })
       .catch((err) => {
+        setLoading(false);
         let { message, errors } = err?.response?.data;
         if (message) {
           toast.error(message);
@@ -228,9 +233,8 @@ const Login = () => {
           ) : (
             <button
               onClick={handleRegister}
-              className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4"
-            >
-              Register
+              className="cursor-pointer w-full bg-fuchsia-600 hover:bg-fuchsia-700 transition text-white px-8 py-2 rounded font-medium mt-4">
+              {loading ? <Loading/> : "Register"}
             </button>
           )}
 
