@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../utils/constants";
 import { toast } from "react-toastify";
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import { useDispatch } from "react-redux";
 import { addUser } from "../../store/userSlice";
 
@@ -63,29 +63,29 @@ const Login = () => {
       });
   };
 
-  const handleGoogleLogin = (credential) => {
+  const handleGoogleLogin = (access_token) => {
     axios
-      .post(BASE_URL + "/api/auth/google-login", { credential })
+      .post(BASE_URL + "/api/auth/google-login", { accessToken: access_token })
       .then((res) => {
         const {token,user,message} = res.data;
         localStorage.setItem("token",token)
         dispatch(addUser({user,token}))
-        toast(message)
-        console.log(res);
+        toast.success(message)
         navigate("/");
       })
       .catch((err) => {
+        toast.error(err?.response?.data?.message)
         console.log(err);
       });
   };
 
-  // const googleLogin = () => <GoogleLogin
-  // onSuccess={(response) => {
-  //   console.log("Google Response:", response);
-  //   handleGoogleLogin(response.credential);
-  // }}
-  // onError={() => toast("Google Login Failed...!")}
-  // />
+  const googleLogin = useGoogleLogin({
+    onSuccess : (response) => {
+      console.log("Google Response:", response);
+      handleGoogleLogin(response.access_token);
+    },
+    onError : () => toast("Google Login Failed...!")
+  })
 
   return (
     <main className="w-full h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -251,16 +251,7 @@ const Login = () => {
               Github
             </div>
 
-            <div className="w-fit font-semibold">
-              <GoogleLogin
-                onSuccess={(response) => {
-                  console.log("Google Response:", response);
-                  handleGoogleLogin(response.credential);
-                }}
-                onError={() => toast("Google Login Failed...!")}
-              />
-            </div>
-            {/* <div onClick={googleLogin} className="btn w-fit bg-white text-black border-[#e5e5e5]">
+            <div onClick={googleLogin} className="btn w-fit bg-white text-black border-[#e5e5e5]">
               <svg
                 aria-label="Google logo"
                 width="16"
@@ -289,7 +280,7 @@ const Login = () => {
                 </g>
               </svg>
               Google
-            </div> */}
+            </div>
           </div>
         </div>
 

@@ -182,8 +182,8 @@ const verifyController = async function(req,res){
 
 const googleLoginController = async function(req,res){
     try{
-        const { credential } = req.body;
-        const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        const { accessToken } = req.body;
+        const googleResponse = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`);
         console.log(googleResponse.data);
         const {email,name,picture} = googleResponse.data;
 
