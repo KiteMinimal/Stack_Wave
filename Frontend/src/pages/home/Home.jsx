@@ -11,7 +11,6 @@ export default function HomePage() {
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className="flex flex-col md:flex-row p-4 gap-6">
-        {/* Left Sidebar */}
         <aside className="hidden md:block w-1/4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <h3 className="font-bold text-lg">Popular Tags</h3>
           <ul className="mt-2 space-y-2">
@@ -21,7 +20,6 @@ export default function HomePage() {
           </ul>
         </aside>
 
-        {/* Questions List */}
         <main className="flex-1">
           <h2 className="text-2xl font-bold mb-4">Latest Questions</h2>
           <div className="space-y-4">
