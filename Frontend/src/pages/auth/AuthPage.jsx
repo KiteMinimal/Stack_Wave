@@ -47,9 +47,9 @@ const Login = () => {
     axios
       .post(BASE_URL + "/api/auth/signUp", { username, email, password })
       .then((res) => {
-        let { user, token, message } = res?.data;
+        let { user, message } = res?.data;
+        dispatch(addUser({user,token: null}))
         toast.success(message);
-        localStorage.setItem("token", token);
         navigate("/verify");
       })
       .catch((err) => {

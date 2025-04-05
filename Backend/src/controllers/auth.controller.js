@@ -23,7 +23,7 @@ const signUpController = async function(req,res){
 
         
         const otp = generateOTP();
-        const otpExpiary = Date.now() + 5 * 60 * 1000;
+        const otpExpiary = Date.now() + 1 * 60 * 1000;
         
         await sendOTP({
             to: email,
@@ -32,7 +32,7 @@ const signUpController = async function(req,res){
             <h2 style="color: #00c8ff;">StackWave Verification Code</h2>
             <p style="font-size: 16px; color: #bbbbbb;">Use this OTP to verify your email:</p>
             <div style=" font-size: 24px; font-weight: bold; color: #ffcc00; background: #333; padding: 10px; border-radius: 5px; letter-spacing: 3px;">${otp}</div>
-                <p style="margin-top: 10px;"> This OTP expires in 5 minutes. </p>
+                <p style="margin-top: 10px;"> This OTP expires in 1 minute. </p>
             </div>`
         })
 
@@ -47,15 +47,12 @@ const signUpController = async function(req,res){
             otpExpiary
         })
 
-        const token = user.generateToken();
-
         delete user._doc.password
         delete user._doc.otp
         delete user._doc.otpExpiary
 
         res.status(201).json({
             user,
-            token,
             message: "user created successfully"
         })
 
@@ -138,13 +135,9 @@ const profileController = async function(req,res){
 
 const verifyController = async function(req,res){
     try{
-        const otp = req.body.otp;
-        const userId = req.user._id;
+        const { otp,email } = req.body;
 
-        console.log(otp);
-        
-
-        const user = await userModel.findById(userId);
+        const user = await userModel.findOne({email});
         if(!user){
             res.status(401).json({ message: "Unauthorized" })
         }
@@ -167,8 +160,11 @@ const verifyController = async function(req,res){
         delete user._doc.otp
         delete user._doc.otpExpiary
 
+        const token = user.generateToken();
+
         res.status(200).json({
             user,
+            token,
             message: "User verified successfully"
         })
 
@@ -214,10 +210,57 @@ const googleLoginController = async function(req,res){
     }
 }
 
+const resendController = async function(req,res){
+    try{
+        const { email } = req.body;
+        const user = await userModel.findOne({ email });
+        if(!user){
+            res.status(401).json({
+                message: "User not found"
+            })
+        }
+        
+        const otp = generateOTP();
+        const otpExpiary = Date.now() + 1 * 60 * 1000;
+
+        if (user.otpExpiary && user.otpExpiary > Date.now()) {
+            return res.status(429).json({
+              message: "Please wait before requesting another OTP"
+            });
+        }
+
+        await sendOTP({
+            to: email,
+            subject: "Stack_Wave Email Verification Code",
+            html: `<div style="max-width: 400px; margin: auto; background: #222; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #00c8ff;">StackWave Verification Code</h2>
+            <p style="font-size: 16px; color: #bbbbbb;">Use this OTP to verify your email:</p>
+            <div style=" font-size: 24px; font-weight: bold; color: #ffcc00; background: #333; padding: 10px; border-radius: 5px; letter-spacing: 3px;">${otp}</div>
+                <p style="margin-top: 10px;"> This OTP expires in 1 minute. </p>
+            </div>`
+        })
+
+        user.otp = otp;
+        user.otpExpiary = otpExpiary;
+        await user.save();
+
+        res.status(200).json({
+            message: "OTP send successfully"
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message || "something went wrong"
+        })
+    }
+}
+
 module.exports = {
     signUpController,
     loginController,
     profileController,
     verifyController,
-    googleLoginController
+    googleLoginController,
+    resendController
 }

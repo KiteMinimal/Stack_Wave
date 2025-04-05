@@ -4,14 +4,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import { BASE_URL } from '../../utils/constants';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const VerifyOTP = () => {
 
     const otpLength = new Array(6).fill("");
     const [input,setInput] = useState(otpLength);
     const ref = useRef([]);
-    const [timer, setTimer] = useState(30);
+    const [timer, setTimer] = useState(60);
     const navigate = useNavigate();
+    const { user } = useSelector((state) => state.user)
+    
 
     const OnchangeHandler = (value,idx) => {
         if(isNaN(value)) return;
@@ -44,11 +47,11 @@ const VerifyOTP = () => {
 
     const handleSubmitOTP = () => {
         if(!input[0]) return;
-        axios.post(BASE_URL + "/api/auth/verify", {otp: input.join("")},{
-            headers: { Authorization: `bearer ${localStorage.getItem("token")}`}
-        })
+        axios.post(BASE_URL + "/api/auth/verify", {otp: input.join(""),email: user.email})
         .then((res) => {
-            toast(res?.data?.message)
+            const {token,message} = res.data;
+            toast(message)
+            localStorage.setItem("token",token);
             navigate("/")
             console.log(res);
         })
@@ -59,7 +62,13 @@ const VerifyOTP = () => {
 
 
     const handleResendOTP = () => {
-        console.log("rsend OTP");
+        axios.post(BASE_URL + "/api/auth/resend-otp", {email: user.email})
+        .then((res) => {
+            console.log(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
     }
 
 
