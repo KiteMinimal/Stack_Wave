@@ -14,7 +14,7 @@ function App() {
     <>
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={ <Protected children={<Home/>} /> } />
+        <Route path='/' element={ <Home/> } />
         <Route path='/auth' element={<GoogleOAuthProvider clientId={clientId}> <AuthPage/> </GoogleOAuthProvider>} />
         <Route path='/verify' element={<VerifyOTP/>} />
       </Routes>

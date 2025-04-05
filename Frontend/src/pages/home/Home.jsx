@@ -1,38 +1,15 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Moon, Sun, Search, User, PlusCircle, ArrowUp, MessageSquare } from "lucide-react";
+import { ArrowUp, MessageSquare } from "lucide-react";
+import Navbar from "../../components/Navbar";
 
 export default function HomePage() {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
     <div className={darkMode ? "dark bg-gray-950 text-white transition-colors duration-300" : "bg-gray-100 text-gray-900 transition-colors duration-300"}>
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow-md">
-        <h1 className="text-2xl font-bold text-orange-500 dark:text-orange-400">StackWave</h1>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-2 text-gray-400 dark:text-gray-300" />
-            <input
-              type="text"
-              placeholder="Search questions..."
-              className="pl-8 pr-4 py-2 rounded-lg border focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </div>
-          <Link to="/ask" className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 transition px-4 py-2 rounded-lg shadow-md text-white">
-            <PlusCircle /> Ask Question
-          </Link>
-          <button onClick={() => setDarkMode(!darkMode)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-md hover:scale-110 transition-transform">
-            {darkMode ? <Sun className="text-yellow-400" /> : <Moon className="text-gray-600" />}
-          </button>
-          <Link to="/profile" className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-md hover:scale-110 transition-transform">
-            <User />
-          </Link>
-        </div>
-      </nav>
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
-      {/* Main Content */}
       <div className="flex flex-col md:flex-row p-4 gap-6">
         {/* Left Sidebar */}
         <aside className="hidden md:block w-1/4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -71,6 +48,7 @@ export default function HomePage() {
           </div>
         </main>
       </div>
+      
     </div>
   );
 }
