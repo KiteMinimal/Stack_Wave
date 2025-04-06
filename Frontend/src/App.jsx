@@ -5,6 +5,9 @@ import Protected from './components/Protected'
 import { ToastContainer } from 'react-toastify';
 import VerifyOTP from './pages/verification/VerifyOTP'
 import { GoogleOAuthProvider } from "@react-oauth/google"
+import Questions from './pages/questions/Questions';
+import Body from './pages/body/Body';
+import Room from './pages/room/Room';
 
 function App() {
 
@@ -14,7 +17,11 @@ function App() {
     <>
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={ <Home/> } />
+        <Route path='/' element={ <Home/> } >
+          <Route path='/' element={ <Protected children={<Body/>} /> } />
+          <Route path='/questions' element={ <Questions/> } />
+          <Route path='/rooms' element={<Room/>} />
+        </Route>
         <Route path='/auth' element={<GoogleOAuthProvider clientId={clientId}> <AuthPage/> </GoogleOAuthProvider>} />
         <Route path='/verify' element={<VerifyOTP/>} />
       </Routes>
