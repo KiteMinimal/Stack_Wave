@@ -7,10 +7,10 @@ export default function HomePage() {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
-    <div className={darkMode ? "dark bg-gray-950 text-white transition-colors duration-300" : "bg-gray-100 text-gray-900 transition-colors duration-300"}>
+    <div className={darkMode ? "dark bg-gray-800 text-white transition-colors duration-300 relative" : "bg-gray-100 text-gray-900 transition-colors duration-300 relative"}>
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
-      <div className="flex flex-col md:flex-row p-4 gap-6">
+      <div className="min-h-screen flex flex-col md:flex-row p-4 gap-6 py-28">
         <aside className="hidden md:block w-1/4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <h3 className="font-bold text-lg">Popular Tags</h3>
           <ul className="mt-2 space-y-2">
