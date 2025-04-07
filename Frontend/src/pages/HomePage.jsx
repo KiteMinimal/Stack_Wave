@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
-import Navbar from "../../components/Navbar";
-import { Outlet } from "react-router-dom";
+import Navbar from "../components/home/Navbar";
+import LandingPage from "./LandingPage";
 
 export default function HomePage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -15,7 +15,8 @@ export default function HomePage() {
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className="pt-20 w-full">
-        <Outlet/>
+        <LandingPage/>
+        {/* <Outlet/> */}
       </div>
     </div>
   );

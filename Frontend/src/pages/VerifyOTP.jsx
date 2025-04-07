@@ -1,11 +1,11 @@
 
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react'
-import { BASE_URL } from '../../utils/constants';
+import { BASE_URL } from '../utils/constants';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Loading from '../../components/Loading';
+import Loading from '../components/Loading';
 
 const VerifyOTP = () => {
 
