@@ -2,7 +2,7 @@
 import React from 'react'
 import { ArrowUp, MessageSquare } from "lucide-react";
 
-const Questions = () => {
+const QuestionPage = () => {
   return (
     <div className="h-screen flex p-4 gap-6 overflow-hidden relative">
   <aside className="hidden md:block w-64 fixed left-0 h-screen p-4 bg-white dark:bg-gray-800 shadow-lg overflow-y-auto">
@@ -44,4 +44,4 @@ const Questions = () => {
   )
 }
 
-export default Questions
+export default QuestionPage

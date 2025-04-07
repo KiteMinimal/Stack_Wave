@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import axios from "axios"
 import { BASE_URL } from '../utils/constants';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addUser } from '../store/userSlice';
 
 const Protected = ({children}) => {
 
     const navigate = useNavigate();
-    const [user,setUser] = useState(null);
+    const { user } = useSelector((state) => state.user);
     const dispatch = useDispatch();
     
     useEffect(() => {
+        if(user) return;
         const token = localStorage.getItem("token");
         if(!token){
             return navigate("/auth")
@@ -26,9 +27,9 @@ const Protected = ({children}) => {
             dispatch(addUser({user: res?.data?.user, token}))
         })
         .catch((err) => {
-            navigate("/auth")
+            navigate("/login")
         })
-    },[dispatch,navigate])
+    },[])
 
     useEffect(() => {
         if(user && !user?.isVerified){
