@@ -54,12 +54,12 @@ function SignupPage() {
       });
     };
 
-    // const googleLogin = useGoogleLogin({
-    //     onSuccess : (response) => {
-    //         handleGoogleLogin(response.access_token);
-    //     },
-    //     onError : () => toast("Google Login Failed...!")
-    // })
+    const googleLogin = useGoogleLogin({
+        onSuccess : (response) => {
+            handleGoogleLogin(response.access_token);
+        },
+        onError : () => toast("Google Login Failed...!")
+    })
 
 
   return (
