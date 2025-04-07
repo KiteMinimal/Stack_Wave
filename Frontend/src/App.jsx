@@ -5,7 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import LandingPage from "./pages/LandingPage";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import BodyLayout from "./pages/BodyLayout";
 import Dashboard from "./pages/Dashboard";
 import QuestionPage from "./pages/QuestionPage";
@@ -13,14 +13,44 @@ import AskPage from "./pages/AskPage";
 import QuestionDetailsPage from "./pages/QuestionDetailsPage";
 import RoomsPage from "./pages/RoomsPage";
 import PageNotFound from "./components/PageNotFound";
+import { useEffect } from "react";
+import axios from "axios";
+import { BASE_URL } from "./utils/constants";
+import { addUser } from "./store/userSlice";
 
 function App() {
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
-  const { token } = useSelector(state => state.user);
-  console.log(token);
   
-  const isUserAuthenticated = !!token;
+  
+  const { token: tokenFromStore } = useSelector(state => state.user);
+  const isUserAuthenticated = !!tokenFromStore;
+  console.log(tokenFromStore);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const tokenFromStorage = localStorage.getItem("token");
+
+    if (tokenFromStorage && !tokenFromStore) {
+      console.log("Token found in storage, fetching user data...");
+      axios.get(BASE_URL + "/api/auth/me", {
+          headers: { Authorization : `bearer ${tokenFromStorage}` }
+      })
+      .then((res) => {
+          console.log("User data fetched:", res.data);
+          if (res.data && res.data.user) {
+            dispatch(addUser({ user: res.data.user, token: tokenFromStorage }));
+          } else {
+             console.error("Invalid token or user data not found.");
+             localStorage.removeItem("token");
+          }
+      })
+      .catch((err) => {
+         console.error("Error fetching user data:", err);
+         localStorage.removeItem("token");
+      });
+    }
+  }, [tokenFromStore]);
 
   return (
     <>
