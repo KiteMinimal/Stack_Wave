@@ -1,9 +1,16 @@
-// src/components/layouts/AppLayout.jsx
+
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/home/Navbar';
+import AuthModal from '../components/AuthModal';
 
-function BodyLayout() {
+
+function BodyLayout({ isAuthenticated }) {
+
+  if (!isAuthenticated) {
+    return <AuthModal isOpen={true} onClose={() => { }} />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
       <header className="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 h-16 flex items-center justify-center">
