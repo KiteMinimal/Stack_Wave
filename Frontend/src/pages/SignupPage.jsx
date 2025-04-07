@@ -38,21 +38,21 @@ function SignupPage() {
         });
     };
 
-    // const handleGoogleLogin = (access_token) => {
-    // axios.post(BASE_URL + "/api/auth/google-login", { accessToken: access_token })
-    //   .then((res) => {
-    //     const {token,user,message} = res.data;
-    //     console.log(user);
-    //     localStorage.setItem("token",token)
-    //     dispatch(addUser({user,token}))
-    //     toast.success(message)
-    //     navigate("/");
-    //   })
-    //   .catch((err) => {
-    //     toast.error(err?.response?.data?.message)
-    //     console.log(err);
-    //   });
-    // };
+    const handleGoogleLogin = (access_token) => {
+    axios.post(BASE_URL + "/api/auth/google-login", { accessToken: access_token })
+      .then((res) => {
+        const {token,user,message} = res.data;
+        console.log(user);
+        localStorage.setItem("token",token)
+        dispatch(addUser({user,token}))
+        toast.success(message)
+        navigate("/");
+      })
+      .catch((err) => {
+        toast.error(err?.response?.data?.message)
+        console.log(err);
+      });
+    };
 
     // const googleLogin = useGoogleLogin({
     //     onSuccess : (response) => {
