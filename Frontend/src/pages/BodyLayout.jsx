@@ -12,8 +12,8 @@ function BodyLayout({ isAuthenticated }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 h-16 flex items-center justify-center">
+    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
+      <header className="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 h-20 flex items-center justify-center">
         <Navbar/>
       </header>
 

@@ -21,12 +21,13 @@ import { addUser } from "./store/userSlice";
 function App() {
 
   const clientId = import.meta.env.VITE_CLIENT_ID;
-  
+  const themeMode = useSelector(state => state.theme.mode);
+  console.log(themeMode);
   
   const { token: tokenFromStore } = useSelector(state => state.user);
   const isUserAuthenticated = !!tokenFromStore;
-  console.log(tokenFromStore);
   const dispatch = useDispatch();
+
 
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("token");
@@ -51,6 +52,17 @@ function App() {
       });
     }
   }, [tokenFromStore]);
+
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (themeMode === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', themeMode);
+  }, [themeMode]);
 
   return (
     <>

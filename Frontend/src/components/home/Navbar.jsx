@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { logoutUser } from "../../store/userSlice";
+import { toggleTheme } from "../../store/themeSlice";
 
-const Navbar = ({ setDarkMode, darkMode }) => {
+const Navbar = () => {
   const { user } = useSelector((state) => state.user);
   const [dropdown,setDropDown] = useState(false);
   const dispatch = useDispatch();
@@ -21,18 +22,11 @@ const Navbar = ({ setDarkMode, darkMode }) => {
   }
 
   return (
-    <nav
-      className={
-        darkMode
-          ? "w-full bg-gray-800 text-white shadow-sm flex items-center gap-2 border-b-[1px] py-2 fixed top-0 left-0 z-10"
-          : "w-full bg-white text-black py-2 shadow-sm flex items-center gap-2 fixed top-0 left-0 z-10"
-      }
-    >
-      <div className="w-[90%] lg:w-[85%] mx-auto navbar flex items-center justify-between">
+      <div className="w-[90%] lg:w-[85%] mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="md:hidden relative">
               <RxHamburgerMenu size={25} onClick={()=> setDropDown(!dropdown)} />
-              {dropdown && <ul className={`absolute font-medium text-gray-600 menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 border border-gray-600 shadow-sm ${darkMode ? "bg-gray-800 text-white border border-white" : ""} `}>
+              {dropdown && <ul className={`absolute font-medium text-gray-600 menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 border border-gray-600 shadow-sm dark:bg-gray-800 dark:text-white dark:border-white `}>
                 <li>
                   <Link to="/" onClick={()=> setDropDown(false)} >Home</Link>
                   <Link to="/questions" onClick={()=> setDropDown(false)} >Questions</Link>
@@ -61,27 +55,17 @@ const Navbar = ({ setDarkMode, darkMode }) => {
           <input
             type="text"
             placeholder="Search"
-            className={`hidden bg-transparent md:block input input-bordered w-28 md:w-96 ${
-              darkMode && "border border-white"
-            } `}
+            className={`hidden bg-transparent md:block input input-bordered w-28 md:w-96 dark:border dark:border-white`}
           />
 
-            <div
-              className={`dropdown dropdown-end ${
-                darkMode ? "bg-gray-700 text-white" : "bg-white text-black"
-              } `}
-            >
+            <div className={`dropdown dropdown-end dark:bg-gray-700 dark:text-white""`}>
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
                   <img alt="Tailwind CSS Navbar component" src={user?.avatar} />
                 </div>
               </div>
-              <ul
-                tabIndex={0}
-                className={`menu menu-sm dropdown-content ${
-                  darkMode ? "bg-black" : "bg-base-100"
-                } rounded-box z-1 mt-3 w-52 p-2 shadow`}
-              >
+
+              <ul tabIndex={0} className={`menu menu-sm dropdown-content dark:bg-black "bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow`}>
                 <li>
                   <Link to="/me" className="justify-between">
                     Profile
@@ -95,12 +79,12 @@ const Navbar = ({ setDarkMode, darkMode }) => {
             </div>
 
           <div className="themeController mx-6">
-            <label className="toggle text-base-content">
+            <label className="toggle text-base-content dark:border dark:border-white">
               <input
                 type="checkbox"
                 value="synthwave"
-                className="theme-controller"
-                onChange={(e) => setDarkMode(!darkMode)}
+                className="theme-controller dark:bg-gray-400 dark:rounded-full"
+                onChange={(e) => dispatch(toggleTheme())}
               />
 
               <svg
@@ -146,7 +130,6 @@ const Navbar = ({ setDarkMode, darkMode }) => {
           </div>
         </div>
       </div>
-    </nav>
   );
 };
 
