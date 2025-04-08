@@ -1,11 +1,24 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { logoutUser } from "../../store/userSlice";
 
 const Navbar = ({ setDarkMode, darkMode }) => {
   const { user } = useSelector((state) => state.user);
   const [dropdown,setDropDown] = useState(false);
+  const dispatch = useDispatch();
+
+  const getNavLinkClass = ({ isActive }) =>
+    `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
+      isActive
+        ? 'bg-indigo-100 text-indigo-700 dark:bg-gray-700 dark:text-white'
+        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+    }`;
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+  }
 
   return (
     <nav
@@ -27,21 +40,21 @@ const Navbar = ({ setDarkMode, darkMode }) => {
                 </li>
               </ul>}
           </span>
-          <div className="text-base md:text-xl">
+          <Link to="/dashboard" className="text-base md:text-xl">
             Stack <strong className="text-orange-400">Wave</strong>
-          </div>
+          </Link>
         </div>
 
         <div className="hidden lg:flex items-center gap-8 font-semibold">
-          <Link to="/" className="hover:text-orange-400">
+          <NavLink to="/dashboard" className={getNavLinkClass}>
             HOME
-          </Link>
-          <Link to="/questions" className="hover:text-orange-400">
+          </NavLink>
+          <NavLink to="/questions" className={getNavLinkClass}>
             QUESTIONS
-          </Link>
-          <Link to="/rooms" className="hover:text-orange-400">
+          </NavLink>
+          <NavLink to="/rooms" className={getNavLinkClass}>
             ROOMS
-          </Link>
+          </NavLink>
         </div>
 
         <div className="flex flex-row-reverse md:flex-row items-center md:gap-4">
@@ -58,16 +71,9 @@ const Navbar = ({ setDarkMode, darkMode }) => {
                 darkMode ? "bg-gray-700 text-white" : "bg-white text-black"
               } `}
             >
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
-              >
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
-                  <img
-                    alt="Tailwind CSS Navbar component"
-                    src={user?.avatar}
-                  />
+                  <img alt="Tailwind CSS Navbar component" src={user?.avatar} />
                 </div>
               </div>
               <ul
@@ -77,13 +83,13 @@ const Navbar = ({ setDarkMode, darkMode }) => {
                 } rounded-box z-1 mt-3 w-52 p-2 shadow`}
               >
                 <li>
-                  <a className="justify-between">
+                  <Link to="/me" className="justify-between">
                     Profile
                     <span className="badge">New</span>
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a>Logout</a>
+                  <div onClick={handleLogout}> Logout </div>
                 </li>
               </ul>
             </div>

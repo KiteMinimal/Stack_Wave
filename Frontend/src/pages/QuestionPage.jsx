@@ -1,47 +1,88 @@
+// src/pages/QuestionPage.jsx
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import QuestionItem from '../components/QuestionItem';
 
-import React from 'react'
-import { ArrowUp, MessageSquare } from "lucide-react";
 
-const QuestionPage = () => {
+const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>;
+
+const dummyQuestions = [
+  { _id: '1', title: 'How to center a div vertically and horizontally using Tailwind CSS?', author: { _id: 'u1', name: 'Alice', avatarUrl: 'https://placehold.co/40x40/7F9CF5/EBF4FF?text=A' }, tags: ['css', 'tailwind', 'flexbox'], votes: 152, answersCount: 5, views: 2560, createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
+  { _id: '2', title: 'What is the difference between useEffect and useLayoutEffect in React?', author: { _id: 'u2', name: 'Bob', avatarUrl: 'https://placehold.co/40x40/A3BFFA/EBF4FF?text=B' }, tags: ['react', 'hooks', 'useeffect'], votes: 98, answersCount: 2, views: 1800, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
+  { _id: '3', title: 'How to handle async operations in Redux Toolkit?', author: { _id: 'u1', name: 'Alice', avatarUrl: 'https://placehold.co/40x40/7F9CF5/EBF4FF?text=A' }, tags: ['react', 'redux', 'async', 'redux-toolkit'], votes: 210, answersCount: 8, views: 3100, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
+  { _id: '4', title: 'Best way to structure Node.js + Express project?', author: { _id: 'u3', name: 'Charlie', avatarUrl: 'https://placehold.co/40x40/C3D7FB/EBF4FF?text=C' }, tags: ['node.js', 'express', 'architecture'], votes: 55, answersCount: 0, views: 950, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
+];
+
+
+function QuestionsPage() {
+  const [questions, setQuestions] = useState(dummyQuestions);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('Newest');
+
+  // TODO: useEffect hook here later to fetch questions from API based on activeFilter and page number
+
+  const handleFilterChange = (filter) => {
+      setActiveFilter(filter);
+      // TODO: Add logic to refetch questions based on the new filter
+      console.log("Filter changed to:", filter);
+  }
+
+  const FilterButton = ({ filterName }) => (
+     <button
+        onClick={() => handleFilterChange(filterName)}
+        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          activeFilter === filterName
+            ? 'bg-indigo-100 text-indigo-700 dark:bg-gray-700 dark:text-white'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+        }`} >
+        {filterName}
+     </button>
+  );
+
   return (
-    <div className="h-screen flex p-4 gap-6 overflow-hidden relative">
-  <aside className="hidden md:block w-64 fixed left-0 h-screen p-4 bg-white dark:bg-gray-800 shadow-lg overflow-y-auto">
-    <h3 className="font-bold text-lg">Popular Tags</h3>
-    <ul className="mt-2 space-y-2">
-      {["JavaScript", "React", "Node.js", "MongoDB", "CSS", "Next.js"].map(tag => (
-        <li key={tag} className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">{tag}</li>
-      ))}
-    </ul>
-  </aside>
+    <div className="space-y-6">
+      {/* Header Area */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          All Questions
+        </h1>
+          <Link to="/ask" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap">
+            <PlusIcon /> Ask Question
+          </Link>
+      </div>
 
-  <main className="flex-1 pl-64 min-h-full pr-4">
-    <h2 className="text-2xl font-bold mb-4">Latest Questions</h2>
-    <div className="space-y-4">
-      {[1, 2, 3,4,  ].map((q) => (
-        <div key={q} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 hover:shadow-xl transition flex gap-4">
-          <div className="flex flex-col items-center">
-            <ArrowUp className="text-gray-600 dark:text-gray-300 cursor-pointer hover:scale-125 transition-transform" />
-            <span className="font-bold text-lg">15</span>
+      {/* Filter/Sort Area */}
+      <div className="flex items-center px-4">
+          <div className="flex space-x-1 sm:space-x-2 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
+             <FilterButton filterName="Newest" />
+             <FilterButton filterName="Top Voted" />
+             <FilterButton filterName="Unanswered" />
           </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">How to optimize React performance?</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Asked by John Doe • 2 hours ago</p>
-            <div className="mt-2 flex gap-2">
-              <span className="px-2 py-1 bg-blue-500 text-white rounded-lg">React</span>
-              <span className="px-2 py-1 bg-gray-500 text-white rounded-lg">Performance</span>
-            </div>
+      </div>
+
+      {/* Question List */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        {loading && <div className="p-6 text-center">Loading questions...</div>}
+        {error && <div className="p-6 text-center text-red-500">Error loading questions: {error}</div>}
+        {!loading && !error && questions.length === 0 && <div className="p-6 text-center text-gray-500">No questions found.</div>}
+
+        {!loading && !error && questions.length > 0 && (
+          <div>
+            {questions.map((q) => (
+              <QuestionItem key={q._id} question={q} />
+            ))}
           </div>
-          <div className="flex flex-col items-center">
-            <MessageSquare className="text-gray-600 dark:text-gray-300" />
-            <span className="text-sm">5 Answers</span>
-          </div>
-        </div>
-      ))}
+        )}
+      </div>
+
+      <div className="mt-6">
+         {/* TODO: Add Pagination Component */}
+         <div className="text-center text-gray-500 dark:text-gray-400">Pagination goes here...</div>
+      </div>
     </div>
-  </main>
-</div>
-
-  )
+  );
 }
 
-export default QuestionPage
+export default QuestionsPage;
