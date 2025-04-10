@@ -11,7 +11,7 @@ const allQuestionsController = async function(req,res){
             return res.status(401).json({ message: "Unauthorized" })
         }
 
-        const questions = await questionModel.find({authorId: _id}).sort({ createdAt: -1 }).populate("authorId",["username","avatar"]);
+        const questions = await questionModel.find().sort({ createdAt: -1 }).populate("authorId",["username","avatar"]);
 
         res.status(200).json({
             questions,
@@ -180,11 +180,52 @@ const deleteController = async function(req,res){
     }
 }
 
+const upVoteController = async function(req,res){
+    try{
+        const questionId = req.body.id;
+        
+        const question  = await questionModel.findById(questionId);
+        question.votes++;
+        await question.save();
+
+        res.status(200).json({
+            message: "upVote successfully",
+            question
+        })
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const downVoteController = async function(req,res){
+    try{
+        const questionId = req.body.id;
+        
+        const question  = await questionModel.findById(questionId);
+        question.votes--;
+        await question.save();
+
+        res.status(200).json({
+            message: "downVote successfully",
+            question
+        })
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
 
 module.exports = {
     allQuestionsController,
     createQuestionController,
     getOneController,
     updateController,
-    deleteController
+    deleteController,
+    upVoteController,
+    downVoteController
 }

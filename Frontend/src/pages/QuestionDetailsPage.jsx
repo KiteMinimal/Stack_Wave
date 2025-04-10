@@ -86,7 +86,7 @@ function QuestionDetailsPage() {
 
     getAnswers();
   },[answers])
-  
+
 
   const handlePostAnswer = async (e) => {
       e.preventDefault();
@@ -117,6 +117,30 @@ function QuestionDetailsPage() {
       }
   };
 
+  const handleUpVote = async () => {
+    axios.post(BASE_URL + "/api/questions/upVote",{},{
+      headers: {Authorization: `bearer ${token}`}
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+  }
+
+  const handleDownVote = async () => {
+    axios.post(BASE_URL + "/api/questions/downVote",{},{
+      headers: {Authorization: `bearer ${token}`}
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+  }
+
 
   if (loading) return <div className="p-6 text-center">Loading question...</div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
@@ -141,11 +165,11 @@ function QuestionDetailsPage() {
 
          <div className="flex items-start space-x-4">
              <div className="flex flex-col items-center space-y-1 flex-shrink-0 text-gray-600 dark:text-gray-400 pt-1">
-                <button className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Upvote">
+                <button onClick={handleUpVote} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Upvote">
                    <UpVoteIcon />
                 </button>
                 <span className="text-xl font-bold text-gray-800 dark:text-gray-200">{votes || 0}</span>
-                <button className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Downvote">
+                <button onClick={handleDownVote} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Downvote">
                    <DownVoteIcon />
                 </button>
              </div>

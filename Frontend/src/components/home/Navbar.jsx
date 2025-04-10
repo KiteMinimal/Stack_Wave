@@ -4,9 +4,12 @@ import { Link, NavLink } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { logoutUser } from "../../store/userSlice";
 import { toggleTheme } from "../../store/themeSlice";
+import axios from "axios";
+import { BASE_URL } from "../../utils/constants";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
-  const { user } = useSelector((state) => state.user);
+  const { user, token } = useSelector((state) => state.user);
   const [dropdown,setDropDown] = useState(false);
   const dispatch = useDispatch();
 
@@ -18,6 +21,15 @@ const Navbar = () => {
     }`;
 
   const handleLogout = () => {
+    axios.post(BASE_URL + "/api/auth/logout",{},{
+      headers: {Authorization: `bearer ${token}`}
+    })
+    .then((res) => {
+      toast.success(res.data.message)
+    })
+    .catch((err) => {
+      toast.error(err.response.data.message)
+    })
     dispatch(logoutUser());
   }
 

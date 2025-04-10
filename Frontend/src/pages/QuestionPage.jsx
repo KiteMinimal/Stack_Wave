@@ -20,7 +20,7 @@ function QuestionsPage() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(BASE_URL + "/api/questions/",{
+    axios.get(BASE_URL + "/api/questions",{
       headers: {Authorization: `bearer ${token}`}
     })
     .then((res) => {
