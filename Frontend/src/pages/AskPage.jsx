@@ -1,11 +1,11 @@
-// src/pages/AskPage.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux'; // To get token for API call
-import MDEditor from '@uiw/react-md-editor'; // Import the editor
+import { useSelector } from 'react-redux';
+import MDEditor from '@uiw/react-md-editor';
 // Import your API function later (e.g., createQuestion from '../api/questions')
 // import { createQuestion } from '../api/questions';
-import axios from 'axios'; // Using axios directly for now
+import axios from 'axios';
 import { BASE_URL } from '../utils/constants';
 
 function AskPage() {
@@ -29,7 +29,6 @@ function AskPage() {
       return;
     }
 
-    // Process tags: split by comma, trim whitespace, remove empty tags
     const processedTags = tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
 
     if (processedTags.length === 0) {
@@ -83,7 +82,6 @@ function AskPage() {
             </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Title Field */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Title
@@ -102,25 +100,24 @@ function AskPage() {
             />
           </div>
 
-          {/* Body Field (Markdown Editor) */}
+          
           <div>
              <label htmlFor="body" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                Body
                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(Include all the information someone would need to answer your question)</span>
              </label>
-             {/* Use data-color-mode attribute to sync editor theme with your app theme */}
+             
              <div data-color-mode={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}>
                  <MDEditor
                    value={body}
-                   onChange={setBody} // Directly updates the state
-                   height={400} // Adjust height as needed
+                   onChange={setBody}
+                   height={400}
                    preview="live" // Options: 'live', 'edit', 'preview'
-                   // You can customize the toolbar commands if needed
                  />
              </div>
           </div>
 
-          {/* Tags Field */}
+          
           <div>
             <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tags
@@ -139,7 +136,7 @@ function AskPage() {
              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Comma-separated tags (e.g., `react, node.js, api`)</p>
           </div>
 
-          {/* Submit Button */}
+          
           <div>
             <button type="submit" disabled={loading} className="inline-flex justify-center items-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
               { loading ? 'Posting...' : 'Post Your Question' }
