@@ -16,9 +16,9 @@ function Dashboard() {
   const { user } = useSelector(state => state.user);
 
   const stats = {
-    reputation: user?.reputation || 150,
-    questionsAsked: user?.questionsAskedCount || 12,
-    answersGiven: user?.answersGivenCount || 25,
+    reputation: user?.reputation,
+    questionsAsked: user?.questionsAskedCount,
+    answersGiven: user?.answerGivenCount
   };
 
   const leaderboard = [

@@ -1,27 +1,40 @@
-// src/pages/QuestionPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import QuestionItem from '../components/QuestionItem';
+import axios from 'axios';
+import { BASE_URL } from '../utils/constants';
 
 
 const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>;
 
-const dummyQuestions = [
-  { _id: '1', title: 'How to center a div vertically and horizontally using Tailwind CSS?', author: { _id: 'u1', name: 'Alice', avatarUrl: 'https://placehold.co/40x40/7F9CF5/EBF4FF?text=A' }, tags: ['css', 'tailwind', 'flexbox'], votes: 152, answersCount: 5, views: 2560, createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
-  { _id: '2', title: 'What is the difference between useEffect and useLayoutEffect in React?', author: { _id: 'u2', name: 'Bob', avatarUrl: 'https://placehold.co/40x40/A3BFFA/EBF4FF?text=B' }, tags: ['react', 'hooks', 'useeffect'], votes: 98, answersCount: 2, views: 1800, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
-  { _id: '3', title: 'How to handle async operations in Redux Toolkit?', author: { _id: 'u1', name: 'Alice', avatarUrl: 'https://placehold.co/40x40/7F9CF5/EBF4FF?text=A' }, tags: ['react', 'redux', 'async', 'redux-toolkit'], votes: 210, answersCount: 8, views: 3100, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
-  { _id: '4', title: 'Best way to structure Node.js + Express project?', author: { _id: 'u3', name: 'Charlie', avatarUrl: 'https://placehold.co/40x40/C3D7FB/EBF4FF?text=C' }, tags: ['node.js', 'express', 'architecture'], votes: 55, answersCount: 0, views: 950, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
-];
-
 
 function QuestionsPage() {
-  const [questions, setQuestions] = useState(dummyQuestions);
+  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Newest');
+  const { token } = useSelector((state) => state.user);
 
   // TODO: useEffect hook here later to fetch questions from API based on activeFilter and page number
+
+  useEffect(() => {
+    setLoading(true);
+    axios.get(BASE_URL + "/api/questions/",{
+      headers: {Authorization: `bearer ${token}`}
+    })
+    .then((res) => {
+      setQuestions(res?.data?.questions)
+      setLoading(false);
+      console.log(res);
+    })
+    .catch((err) => {
+      setLoading(false);
+      console.log(err);
+    })
+  },[])
+
 
   const handleFilterChange = (filter) => {
       setActiveFilter(filter);

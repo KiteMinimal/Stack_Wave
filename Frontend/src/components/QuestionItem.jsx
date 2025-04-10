@@ -1,5 +1,4 @@
 
-// src/components/questions/QuestionItem.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,11 +17,10 @@ const formatNumber = (num) => {
 import { formatDistanceToNow } from 'date-fns'; // Example using date-fns
 
 function QuestionItem({ question }) {
-  // Destructure question prop
   const {
-    _id, // Assuming MongoDB ID is available
+    _id,
     title,
-    author, // Assuming author is populated: { _id, name, avatarUrl }
+    authorId : author,
     tags,
     votes,
     answersCount,
@@ -74,10 +72,10 @@ function QuestionItem({ question }) {
           <Link to={`/profile/${author?._id}`} className="flex items-center space-x-1 hover:opacity-80">
             <img
                 className="h-5 w-5 rounded object-cover"
-                src={author?.avatarUrl || `https://ui-avatars.com/api/?name=${author?.name || 'A'}&size=20&background=random`}
-                alt={author?.name || 'Author'}
+                src={author?.avatar || `https://ui-avatars.com/api/?name=${author?.username || 'A'}&size=20&background=random`}
+                alt={author?.username || 'Author'}
             />
-            <span className="text-indigo-700 dark:text-indigo-400 font-medium">{author?.name || 'Unknown User'}</span>
+            <span className="text-indigo-700 dark:text-indigo-400 font-medium">{author?.username || 'Unknown User'}</span>
           </Link>
           <span>
             asked {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'recently'}
