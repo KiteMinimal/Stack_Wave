@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux';
 import QuestionItem from '../components/QuestionItem';
 import axios from 'axios';
 import { BASE_URL } from '../utils/constants';
+import { toast } from "react-toastify"
+import Loading from '../components/Loading';
 
 
 const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>;
@@ -13,11 +15,8 @@ const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
 function QuestionsPage() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Newest');
   const { token } = useSelector((state) => state.user);
-
-  // TODO: useEffect hook here later to fetch questions from API based on activeFilter and page number
 
   useEffect(() => {
     setLoading(true);
@@ -27,11 +26,10 @@ function QuestionsPage() {
     .then((res) => {
       setQuestions(res?.data?.questions)
       setLoading(false);
-      console.log(res);
     })
     .catch((err) => {
       setLoading(false);
-      console.log(err);
+      toast.error(err.response.data.message)
     })
   },[])
 
@@ -66,7 +64,6 @@ function QuestionsPage() {
           </Link>
       </div>
 
-      {/* Filter/Sort Area */}
       <div className="flex items-center px-4">
           <div className="flex space-x-1 sm:space-x-2 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
              <FilterButton filterName="Newest" />
@@ -77,11 +74,10 @@ function QuestionsPage() {
 
       {/* Question List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        {loading && <div className="p-6 text-center">Loading questions...</div>}
-        {error && <div className="p-6 text-center text-red-500">Error loading questions: {error}</div>}
-        {!loading && !error && questions.length === 0 && <div className="p-6 text-center text-gray-500">No questions found.</div>}
+        {loading && <div className="p-6 text-center"> <Loading/> </div>}
+        {!loading && questions.length === 0 && <div className="p-6 text-center text-gray-500">No questions found.</div>}
 
-        {!loading && !error && questions.length > 0 && (
+        {!loading && questions.length > 0 && (
           <div>
             {questions.map((q) => (
               <QuestionItem key={q._id} question={q} />
@@ -91,7 +87,6 @@ function QuestionsPage() {
       </div>
 
       <div className="mt-6">
-         {/* TODO: Add Pagination Component */}
          <div className="text-center text-gray-500 dark:text-gray-400">Pagination goes here...</div>
       </div>
     </div>

@@ -3,6 +3,8 @@ const userModel = require("../models/user.model");
 const generateOTP = require("../utils/generateOTP");
 const sendOTP = require("../utils/sendOTP");
 const axios = require("axios");
+const redis = require("../utils/redisConnection");
+
 
 const signUpController = async function(req,res){
     try{
@@ -256,11 +258,27 @@ const resendController = async function(req,res){
     }
 }
 
+const logoutController = async function(req,res){
+    try{
+        const token = req.headers.authorization?.split(" ")[1];
+
+        if (!token) return res.status(400).json({ message: "Token not found" });
+
+        await redis.set(token, "blacklisted", "EX", 60 * 60);
+        
+        return res.status(200).json({ message: "Logged out successfully" });
+    }
+    catch(err){
+        res.status(500).json({ message: err.message })
+    }
+}
+
 module.exports = {
     signUpController,
     loginController,
     profileController,
     verifyController,
     googleLoginController,
-    resendController
+    resendController,
+    logoutController
 }

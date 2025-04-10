@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const questionModel = require("../models/question.model");
 const userModel = require("../models/user.model");
 
+
 const allQuestionsController = async function(req,res){
     try{
         const {_id} = req.user;
@@ -67,7 +68,7 @@ const getOneController = async function(req,res){
             return res.status(400).json({message: "Question is not found"})
         }
 
-        const question = await questionModel.findById(id);
+        const question = await questionModel.findById(id).populate("authorId");
         if(!question){
             return res.status(400).json({
                 message: "Question not found"

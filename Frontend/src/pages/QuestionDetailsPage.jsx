@@ -36,9 +36,7 @@ const MarkdownComponents = {
 
 function QuestionDetailsPage() {
   const { id: questionId } = useParams();
-  const navigate = useNavigate();
-  const { user: loggedInUser, token } = useSelector(state => state.user);
-  const isLoggedIn = !!loggedInUser;
+  const { token } = useSelector(state => state.user);
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -49,31 +47,47 @@ function QuestionDetailsPage() {
   const [answerLoading, setAnswerLoading] = useState(false);
   const [answerError, setAnswerError] = useState(null);
 
-  // Fetch Question and Answers useEffect
-  // useEffect(() => {
-  //   const fetchQuestionDetails = async () => {
-  //     setLoading(true);
-  //     setError(null);
-  //     try {
-  //       const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`);
+  // Fetch Question
+  useEffect(() => {
+    const fetchQuestionDetails = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`,{
+          headers: {Authorization: `bearer ${token}`}
+        });
 
-  //       if (response.data) {
-  //         setQuestion(response.data.question); // Adjust based on your API response structure
-  //         setAnswers(response.data.answers || []); // Adjust based on your API response structure
-  //       } else {
-  //         setError('Question not found.');
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching question details:", err);
-  //       setError(err.response?.data?.message || 'Failed to load question details.');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchQuestionDetails();
-  // }, [questionId]);
+        if (response.data) {
+          setQuestion(response.data.question);
+          setAnswers(response.data.answers || []);
+        } else {
+          setError('Question not found.');
+        }
+      } catch (err) {
+        console.error("Error fetching question details:", err);
+        setError(err.response?.data?.message || 'Failed to load question details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestionDetails();
+  }, [questionId]);
 
-  // Handle Posting New Answer
+  // Fetch Answers
+  useEffect(() => {
+    const getAnswers = async () => {
+      try{
+        const res = await axios.get(BASE_URL + `/api/answers/${questionId}`)
+      }
+      catch(err){
+  
+      }
+    }
+
+    getAnswers();
+  },[answers])
+  
+
   const handlePostAnswer = async (e) => {
       e.preventDefault();
       if (!newAnswerBody.trim()) {
@@ -104,20 +118,17 @@ function QuestionDetailsPage() {
   };
 
 
-  // --- Render Logic ---
   if (loading) return <div className="p-6 text-center">Loading question...</div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
   if (!question) return <div className="p-6 text-center">Question not found.</div>;
 
-  // Destructure question details after loading checks
-  const { title, body, author, tags, votes, answersCount, views, createdAt } = question;
+
+  const { title, body, authorId: author, tags, votes, views, createdAt } = question;
 
   return (
     <div className="space-y-8">
 
-      {/* Question Area */}
       <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-lg shadow">
-        {/* Question Header */}
         <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">
                 {title}
@@ -125,13 +136,10 @@ function QuestionDetailsPage() {
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-2">
                  <span>Asked {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'N/A'}</span>
                  <span>Viewed {views || 0} times</span>
-                 {/* Add modified time later if available */}
             </div>
         </div>
 
-         {/* Question Body & Voting */}
          <div className="flex items-start space-x-4">
-            {/* Voting */}
              <div className="flex flex-col items-center space-y-1 flex-shrink-0 text-gray-600 dark:text-gray-400 pt-1">
                 <button className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Upvote">
                    <UpVoteIcon />
@@ -142,16 +150,14 @@ function QuestionDetailsPage() {
                 </button>
              </div>
 
-            {/* Body & Tags */}
+            
              <div className="flex-grow">
-                 {/* Render question body using ReactMarkdown */}
                  <div className="prose prose-sm sm:prose dark:prose-invert max-w-none mb-5">
                      <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
                        {body}
                      </ReactMarkdown>
                  </div>
 
-                 {/* Tags */}
                  <div className="flex flex-wrap gap-1.5 mb-5">
                    {tags?.map((tag) => (
                      <Link key={tag} to={`/questions/tagged/${tag}`} className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 rounded px-2 py-0.5 transition-colors">
@@ -160,14 +166,14 @@ function QuestionDetailsPage() {
                    ))}
                  </div>
 
-                 {/* Author Info Card */}
+                 
                  <div className="flex justify-end">
                      <div className="flex-shrink-0 bg-blue-50 dark:bg-gray-700 p-2 rounded-md text-xs text-gray-600 dark:text-gray-300 max-w-max">
                        <p className="mb-1">asked by</p>
                        <Link to={`/profile/${author?._id}`} className="flex items-center space-x-1.5 hover:opacity-80">
                          <UserAvatar
                            size="w-6 h-6"
-                           src={author?.authorUrl || `https://ui-avatars.com/api/?name=${author?.username || 'A'}&size=24&background=random`}
+                           src={author?.avatar || `https://ui-avatars.com/api/?name=${author?.username || 'A'}&size=24&background=random`}
                            alt={author?.username || 'Author'}
                          />
                          <span className="font-medium text-blue-700 dark:text-blue-400">{author?.username || 'Unknown User'}</span>
@@ -184,7 +190,7 @@ function QuestionDetailsPage() {
          {/* Answers Header */}
          <div className="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-3">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {answers.length} Answer{answers.length !== 1 ? 's' : ''}
+                {answers.length} Answer {answers.length !== 1 ? 's' : ''}
             </h2>
             {/* Add Sort Dropdown later */}
             {/* <div> Sort by: [ Dropdown ] </div> */}
@@ -205,7 +211,6 @@ function QuestionDetailsPage() {
       </div>
 
       {/* "Your Answer" Section (Only for logged-in users) */}
-      {isLoggedIn && (
          <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-lg shadow">
              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                  Your Answer
@@ -233,17 +238,6 @@ function QuestionDetailsPage() {
                 </button>
              </form>
          </div>
-      )}
-       {!isLoggedIn && (
-         <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-lg shadow text-center">
-             <p className="text-gray-600 dark:text-gray-300">
-                You need to be logged in to post an answer.
-                <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline ml-1">Log In</Link> or
-                <Link to="/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline ml-1">Sign Up</Link>.
-             </p>
-         </div>
-       )}
-
     </div>
   );
 }
