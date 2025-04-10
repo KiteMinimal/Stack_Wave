@@ -39,12 +39,12 @@ const userSchema = new mongoose.Schema({
     },
     reputation: {
         type: Number,
-        default: 0,
+        default: 50,
         index: true
     },
     bages: {
         type: [String],
-        default: []
+        default: [""]
     },
     otp: {
         type: String,
@@ -54,6 +54,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    questionsAskedCount: {
+        type: Number,
+        default: 0
+    },
+    answerGivenCount: {
+        type: Number,
+        default: 0
+    }
 })
 
 userSchema.statics.hashPassword = async function(password){

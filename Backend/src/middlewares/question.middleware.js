@@ -9,8 +9,7 @@ const questionValidation = [
 
     body("body")
         .notEmpty().withMessage("Body is required")
-        .isLength({ max: 300 }).withMessage("Body cannot be more than 300 characters long")
-        .trim(),
+        .isLength({ max: 1000 }).withMessage("Body cannot be more than 300 characters long"),
 
     body("tags")
         .isArray({ min: 1, max: 10 }).withMessage("Tags must be an array with 1 to 10 items")

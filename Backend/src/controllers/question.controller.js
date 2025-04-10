@@ -1,6 +1,7 @@
 
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const questionModel = require("../models/question.model");
+const userModel = require("../models/user.model");
 
 const allQuestionsController = async function(req,res){
     try{
@@ -23,7 +24,15 @@ const allQuestionsController = async function(req,res){
 
 const createQuestionController = async function(req,res){
     try{
+        const user = await userModel.findById(req.user._id);
+        if(!user){
+            return res.status(401).json({
+                message: "User not found"
+            })
+        }
+
         const {title, body, tags} = req.body;
+
         if(!title || !tags ||!body){
             return res.status(400).json({ message: "All fields are required" })
         }
@@ -34,6 +43,9 @@ const createQuestionController = async function(req,res){
             tags,
             authorId: req.user._id
         })
+
+        user.questionsAskedCount++;
+        await user.save();
 
         res.status(201).json({
             question,
@@ -52,7 +64,7 @@ const getOneController = async function(req,res){
     try{
         const id = req.params.id;
         if(!id){
-            return res.status(400).json({message: "id is empty"})
+            return res.status(400).json({message: "Question is not found"})
         }
 
         const question = await questionModel.findById(id);

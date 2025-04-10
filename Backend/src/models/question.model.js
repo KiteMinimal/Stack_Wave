@@ -11,7 +11,7 @@ const questionSchema = new mongoose.Schema({
     },
     body: {
         type: String,
-        maxLength: [300, "Question is too long, Make it short"]
+        maxLength: [1000, "Question is too long, Make it short"]
     },
     tags: {
         type: [String],
@@ -27,6 +27,10 @@ const questionSchema = new mongoose.Schema({
         default: 0
     },
     answersCount: {
+        type: Number,
+        default: 0
+    },
+    views: {
         type: Number,
         default: 0
     }
