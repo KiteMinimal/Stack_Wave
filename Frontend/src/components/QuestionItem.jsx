@@ -57,13 +57,9 @@ function QuestionItem({ question }) {
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-2.5">
           {tags?.map((tag) => (
-            <Link
-              key={tag}
-              to={`/questions/tagged/${tag}`} // Link to tagged questions page (optional)
-              className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 rounded px-2 py-0.5 transition-colors"
-            >
+            <div key={tag} className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 rounded px-2 py-0.5 transition-colors">
               {tag}
-            </Link>
+            </div>
           ))}
         </div>
 

@@ -10,7 +10,7 @@ const allQuestionsController = async function(req,res){
             return res.status(401).json({ message: "Unauthorized" })
         }
 
-        const questions = await questionModel.find({authorId: _id}).populate("authorId",["username","avatar"]);
+        const questions = await questionModel.find({authorId: _id}).sort({ createdAt: -1 }).populate("authorId",["username","avatar"]);
 
         res.status(200).json({
             questions,

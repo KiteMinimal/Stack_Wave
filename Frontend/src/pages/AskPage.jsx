@@ -13,8 +13,8 @@ function AskPage() {
   const { token } = useSelector(state => state.user);
 
   const [title, setTitle] = useState('');
-  const [body, setBody] = useState(''); // Markdown content for the body
-  const [tags, setTags] = useState(''); // Simple comma-separated tags for now
+  const [body, setBody] = useState('');
+  const [tags, setTags] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +23,6 @@ function AskPage() {
     setLoading(true);
     setError(null);
 
-    // Basic validation
     if (!title.trim() || !body.trim() || !tags.trim()) {
       setError('Please fill in all fields: Title, Body, and Tags.');
       setLoading(false);
@@ -38,44 +37,28 @@ function AskPage() {
         setLoading(false);
         return;
     }
-    if (processedTags.length > 5) { // Example limit
+
+    if (processedTags.length > 5) {
         setError('You can add a maximum of 5 tags.');
         setLoading(false);
         return;
     }
 
-
     const questionData = {
       title: title.trim(),
-      body: body, // Send the raw Markdown string
+      body: body,
       tags: processedTags,
     };
 
     console.log('Submitting question:', questionData);
 
     try {
-      // --- Replace with your API call ---
-      // const response = await createQuestion(questionData, token);
-
-      // Example using axios directly
       const response = await axios.post(`${BASE_URL}/api/questions`, questionData, {
         headers: { Authorization: `bearer ${token}` }
       });
-      // --- End API call ---
 
       console.log('API Response:', response.data);
-
-      // Assuming response.data contains the newly created question with its _id
-      const newQuestionId = response.data?.question?._id; // Adjust based on your actual API response
-
-      if (newQuestionId) {
-        // Redirect to the newly created question's page
-        navigate(`/question/${newQuestionId}`);
-      } else {
-         // Or redirect to questions page if ID is not returned
-         console.warn("New question ID not found in response, redirecting to questions page.");
-         navigate('/questions');
-      }
+      navigate('/questions');
 
     } catch (err) {
       console.error("Error posting question:", err);
@@ -158,18 +141,14 @@ function AskPage() {
 
           {/* Submit Button */}
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex justify-center items-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Posting...' : 'Post Your Question'}
+            <button type="submit" disabled={loading} className="inline-flex justify-center items-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              { loading ? 'Posting...' : 'Post Your Question' }
             </button>
           </div>
         </form>
       </div>
 
-      {/* Guidance Sidebar */}
+
        <aside className="lg:w-1/4 flex-shrink-0">
            <div className="sticky top-20 bg-blue-50 dark:bg-gray-800/50 border border-blue-200 dark:border-gray-700 p-4 rounded-lg shadow-sm">
                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-3">How to Ask a Good Question</h3>

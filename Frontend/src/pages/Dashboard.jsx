@@ -15,12 +15,6 @@ const CodeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
 function Dashboard() {
   const { user } = useSelector(state => state.user);
 
-  const stats = {
-    reputation: user?.reputation,
-    questionsAsked: user?.questionsAskedCount,
-    answersGiven: user?.answerGivenCount
-  };
-
   const leaderboard = [
     { id: '1', name: 'Alice Coder', reputation: 1250, avatarUrl: 'https://placehold.co/40x40/7F9CF5/EBF4FF?text=AC' },
     { id: '2', name: 'Bob Debugger', reputation: 980, avatarUrl: 'https://placehold.co/40x40/A3BFFA/EBF4FF?text=BD' },
@@ -50,7 +44,7 @@ function Dashboard() {
               <PlaceholderIcon className="w-8 h-8 bg-white bg-opacity-30" />
             <div>
               <p className="text-sm font-medium uppercase tracking-wider opacity-80">Reputation</p>
-              <p className="text-2xl font-bold">{stats.reputation}</p>
+              <p className="text-2xl font-bold">{user?.reputation}</p>
             </div>
           </div>
            
@@ -59,7 +53,7 @@ function Dashboard() {
              <PlaceholderIcon className="w-8 h-8" />
             <div>
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Questions Asked</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.questionsAsked}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{user?.questionsAskedCount}</p>
             </div>
           </div>
            
@@ -68,7 +62,7 @@ function Dashboard() {
               <PlaceholderIcon className="w-8 h-8" />
              <div>
                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Answers Given</p>
-               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.answersGiven}</p>
+               <p className="text-2xl font-bold text-gray-900 dark:text-white">{user?.answerGivenCount}</p>
              </div>
            </div>
         </div>
