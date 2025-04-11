@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,6 +10,8 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { BASE_URL } from '../utils/constants';
+import Loading from '../components/Loading';
+import AnswerItem from '../components/AnswerItem';
 
 
 const UpVoteIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>;
@@ -25,7 +27,7 @@ const MarkdownComponents = {
         {String(children).replace(/\n$/, '')}
       </SyntaxHighlighter>
     ) : (
-      <code className={`inline-code ${className || ''}`} {...props}> {/* Add a class for inline code styling */}
+      <code className={`inline-code ${className || ''}`} {...props}>
         {children}
       </code>
     );
@@ -47,10 +49,12 @@ function QuestionDetailsPage() {
   const [answerLoading, setAnswerLoading] = useState(false);
   const [answerError, setAnswerError] = useState(null);
 
-  // Fetch Question
+  const [reloadOnVote, setReloadOnVote] = useState(false);
+
+
   useEffect(() => {
     const fetchQuestionDetails = async () => {
-      setLoading(true);
+      // setLoading(true);
       setError(null);
       try {
         const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`,{
@@ -71,7 +75,7 @@ function QuestionDetailsPage() {
       }
     };
     fetchQuestionDetails();
-  }, [questionId]);
+  }, [questionId, reloadOnVote]);
 
   // Fetch Answers
   useEffect(() => {
@@ -118,11 +122,12 @@ function QuestionDetailsPage() {
   };
 
   const handleUpVote = async () => {
-    axios.post(BASE_URL + "/api/questions/upVote",{},{
+    axios.post(BASE_URL + "/api/questions/upVote",{id: questionId},{
       headers: {Authorization: `bearer ${token}`}
     })
     .then((res) => {
       console.log(res);
+      setReloadOnVote(!reloadOnVote);
     })
     .catch((err) => {
       console.log(err);
@@ -130,11 +135,12 @@ function QuestionDetailsPage() {
   }
 
   const handleDownVote = async () => {
-    axios.post(BASE_URL + "/api/questions/downVote",{},{
+    axios.post(BASE_URL + "/api/questions/downVote",{id: questionId},{
       headers: {Authorization: `bearer ${token}`}
     })
     .then((res) => {
       console.log(res);
+      setReloadOnVote(!reloadOnVote);
     })
     .catch((err) => {
       console.log(err);
@@ -142,7 +148,7 @@ function QuestionDetailsPage() {
   }
 
 
-  if (loading) return <div className="p-6 text-center">Loading question...</div>;
+  if (loading) return <div className="p-6 mt-40 text-center"> <Loading/> </div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
   if (!question) return <div className="p-6 text-center">Question not found.</div>;
 
@@ -214,7 +220,7 @@ function QuestionDetailsPage() {
          {/* Answers Header */}
          <div className="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-3">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {answers.length} Answer {answers.length !== 1 ? 's' : ''}
+                {answers.length} Answer{answers.length !== 1 ? 's' : ''}
             </h2>
             {/* Add Sort Dropdown later */}
             {/* <div> Sort by: [ Dropdown ] </div> */}

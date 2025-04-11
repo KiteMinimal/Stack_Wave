@@ -182,9 +182,17 @@ const deleteController = async function(req,res){
 
 const upVoteController = async function(req,res){
     try{
-        const questionId = req.body.id;
+        const questionId = req.body?.id;
+        const userId = req?.user?._id;
         
         const question  = await questionModel.findById(questionId);
+
+        if(userId.toString() === question.authorId.toString()){
+            return res.status().json({
+                message: "Can not upVote or downVote to your question"
+            })
+        }
+
         question.votes++;
         await question.save();
 
@@ -202,9 +210,23 @@ const upVoteController = async function(req,res){
 
 const downVoteController = async function(req,res){
     try{
-        const questionId = req.body.id;
+        const questionId = req.body?.id;
+        const userId = req?.user?._id;
         
         const question  = await questionModel.findById(questionId);
+
+        if(!question){
+            return res.status(400).json({
+                message: "Question not found"
+            })
+        }
+
+        if(userId.toString() === question.authorId.toString()){
+            return res.status(400).json({
+                message: "Can not upVote or downVote to your question"
+            })
+        }
+
         question.votes--;
         await question.save();
 

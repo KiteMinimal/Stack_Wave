@@ -10,10 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-java": "^6.0.1",
+    "@codemirror/lang-javascript": "^6.2.3",
+    "@codemirror/lang-python": "^6.1.7",
     "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.17",
+    "@uiw/codemirror-theme-okaidia": "^4.23.10",
+    "@uiw/react-codemirror": "^4.23.10",
     "@uiw/react-md-editor": "^4.0.5",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
@@ -28,6 +35,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.5",
     "remark-gfm": "^4.0.1",
+    "socket.io-client": "^4.8.1",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.0.17"
   },

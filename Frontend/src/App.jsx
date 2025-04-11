@@ -11,12 +11,13 @@ import Dashboard from "./pages/Dashboard";
 import QuestionPage from "./pages/QuestionPage";
 import AskPage from "./pages/AskPage";
 import QuestionDetailsPage from "./pages/QuestionDetailsPage";
-import RoomsPage from "./pages/RoomsPage";
+import CreateRoomsPage from "./pages/CreateRoomPage";
 import PageNotFound from "./components/PageNotFound";
 import { useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "./utils/constants";
 import { addUser } from "./store/userSlice";
+import RoomPage from "./pages/RoomPage";
 
 function App() {
 
@@ -78,7 +79,8 @@ function App() {
               <Route path="/questions" element={<QuestionPage/>} />
               <Route path="/ask" element={<AskPage />} />
               <Route path="/question/:id" element={<QuestionDetailsPage />} />
-              <Route path="/rooms" element={<RoomsPage />} />
+              <Route path="/rooms" element={ <CreateRoomsPage/>} />
+              <Route path="/room/:id" element={<RoomPage/>} />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>
