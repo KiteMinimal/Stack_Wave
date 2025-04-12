@@ -24,8 +24,8 @@ function RoomPage() {
     const [copied, setCopied] = useState(false); 
     const [isConnected, setIsConnected] = useState(false);
     const [participants, setParticipants] = useState([]);
-    const [messages, setMessages] = useState([]); 
-    const [newMessage, setNewMessage] = useState(''); 
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
     const [code, setCode] = useState(''); 
     const [language, setLanguage] = useState(javascript()); 
 
@@ -56,29 +56,30 @@ function RoomPage() {
     // Socket Connection useEffect
     useEffect(() => {
         if (!user || !token) {
-            // navigate('/login'); // Or show modal via BodyLayout
+            navigate('/login');
             return;
         }
 
         socketRef.current = io(SOCKET_SERVER_URL, { query: { token } });
         const socket = socketRef.current;
 
-        socket.on('connect', () => { /* ... (same as before) ... */
+        socket.on('connect', () => {
             console.log(`Socket connected: ${socket.id}`);
             setIsConnected(true);
             socket.emit('joinRoom', { roomId, user });
         });
-        socket.on('disconnect', (reason) => { /* ... (same as before) ... */
+
+        socket.on('disconnect', (reason) => {
             console.log(`Socket disconnected: ${reason}`);
             setIsConnected(false);
         });
-        socket.on('connect_error', (error) => { /* ... (same as before) ... */
+
+        socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
             setIsConnected(false);
         });
 
-        // Listen for initial room data (including code)
-        socket.on('roomData', ({ participantsList, currentCode }) => { // Added currentCode
+        socket.on('roomData', ({ participantsList, currentCode }) => {
             console.log('Received initial room data:', participantsList, currentCode?.substring(0,10) + '...');
             setParticipants(participantsList || []);
             if (currentCode !== undefined && currentCode !== null) {
@@ -100,43 +101,40 @@ function RoomPage() {
              });
         });
 
-        // Listen for new chat messages (Added)
-        socket.on('newMessage', (message) => { // message object: { user: { _id, name, avatarUrl }, text, timestamp }
+
+        socket.on('newMessage', (message) => {
             console.log('Received newMessage:', message);
             setMessages((prev) => [...prev, message]);
         });
 
-
-        socket.on('userJoined', (newUser) => { /* ... (same as before) ... */
+        socket.on('userJoined', (newUser) => {
              console.log('User joined:', newUser);
              setParticipants((prev) => [...prev, newUser]);
         });
-        socket.on('userLeft', (userId) => { /* ... (same as before) ... */
+
+        socket.on('userLeft', (userId) => {
             console.log('User left:', userId);
             setParticipants((prev) => prev.filter(p => p._id !== userId));
         });
 
-        // Cleanup
-        return () => { /* ... (same as before) ... */
+        return () => {
             if (socketRef.current) {
                 console.log(`Disconnecting socket: ${socketRef.current.id}`);
                 socketRef.current.disconnect();
                 socketRef.current = null;
                 setIsConnected(false);
                 setParticipants([]);
-                setMessages([]); // Clear messages on disconnect
-                setCode(''); // Clear code on disconnect
+                setMessages([]);
+                setCode('');
             }
         };
     }, [roomId, user, token, navigate]);
 
-
-    // Chat Message Send Handler 
+ 
     const handleSendMessage = (e) => {
         e.preventDefault();
         const messageText = newMessage.trim();
         if (messageText && socketRef.current && isConnected) {
-            // Send message to server
             socketRef.current.emit('sendMessage', { roomId, text: messageText });
             setNewMessage('');
         }
@@ -151,7 +149,7 @@ function RoomPage() {
         }).catch(err => {
           console.error('Failed to copy room link: ', err);
         });
-      };
+    };
 
 
     return (
@@ -214,9 +212,9 @@ function RoomPage() {
                             <div key={index} className={`flex ${msg.user?._id === user?._id ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`flex items-start gap-2 max-w-[80%] ${msg.user?._id === user?._id ? 'flex-row-reverse' : ''}`}>
                                      
-                                    <img className="w-6 h-6 rounded-full object-cover mt-1 flex-shrink-0" src={msg.user?.avatarUrl || `https://ui-avatars.com/api/?name=${msg.user?.name || '?'}&size=24&background=random`} alt={msg.user?.name} />
+                                    <img className="w-6 h-6 rounded-full object-cover mt-1 flex-shrink-0" src={msg.user?.avatar || `https://ui-avatars.com/api/?name=${msg.user?.username || '?'}&size=24&background=random`} alt={msg.user?.username} />
                                     <div className={`px-3 py-1.5 rounded-lg ${msg.user?._id === user?._id ? 'bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100'}`}>
-                                          {msg.user?._id !== user?._id && <p className="text-xs font-semibold mb-0.5 opacity-80">{msg.user?.name || 'Unknown'}</p>}
+                                          {msg.user?._id !== user?._id && <p className="text-xs font-semibold mb-0.5 opacity-80">{msg.user?.username || 'Unknown'}</p>}
                                          <p className="text-sm break-words">{msg.text}</p>
                                          <p className="text-xs opacity-60 mt-1 text-right"> {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}) : ''} </p>
                                      </div>
