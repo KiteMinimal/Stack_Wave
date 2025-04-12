@@ -36,12 +36,10 @@ function CreateRoomsPage() {
     setError(null);
     const roomIdToJoin = joinRoomId.trim();
     if (roomIdToJoin) {
-        // Basic validation: Check if it looks like a plausible room ID/link
-        // More robust validation might be needed
         const parts = roomIdToJoin.split('/');
-        const potentialId = parts[parts.length - 1]; // Get last part after potential URL slashes
+        const potentialId = parts[parts.length - 1];
 
-        if (potentialId) { // Check if we got something
+        if (potentialId) {
              console.log(`Attempting to join room: ${potentialId}`);
              navigate(`/room/${potentialId}`);
         } else {
@@ -52,12 +50,12 @@ function CreateRoomsPage() {
     }
   };
 
-  // Function passed to the modal to handle actual room creation API call
+  
   const createRoomApiCall = async ({ roomName, language }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${BASE_URL}/api/rooms`,
+      const response = await axios.post(`${BASE_URL}/api/room/create`,
         { name: roomName, language },
         { headers: { Authorization: `bearer ${token}` } }
       );

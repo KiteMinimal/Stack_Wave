@@ -14,6 +14,6 @@ const roomRoutes = require("./routes/room.routes");
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/questions", questionRoutes);
-app.use("/room", roomRoutes)
+app.use("/api/room", roomRoutes)
 
 module.exports = app;

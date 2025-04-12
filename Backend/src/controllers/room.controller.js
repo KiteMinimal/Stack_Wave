@@ -1,10 +1,18 @@
 
-const {nanoid}  = require("nanoid");
 const roomModel = require("../models/room.modal");
 
 const createRoomcontroller = async function(req,res){
     try{
+        const { nanoid } = await import('nanoid');
+
         const {name,language} = req.body;
+
+        if(!language){
+            return res.status(400).json({
+                message: "language is required"
+            })
+        }
+
         const userId = req.user?._id;
         if(!userId){
             return res.status(401).json({
@@ -16,7 +24,7 @@ const createRoomcontroller = async function(req,res){
 
         const room = await roomModel.create({
             roomId: generatedRoomId,
-            name,
+            name : name?.trim() || `Room-${generatedRoomId.substring(0,4)}`,
             language,
             host: userId,
             participants: [userId]
@@ -26,7 +34,7 @@ const createRoomcontroller = async function(req,res){
             message: "Room created successfully",
             room: {
                 name: room.name,
-                roomID: room.roomId,
+                roomId: room.roomId,
                 language: room.language
             }
         })
