@@ -1,8 +1,8 @@
-// src/pages/RoomsPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import axios from 'axios'; // Or your API service
+import axios from 'axios';
 import { BASE_URL } from '../utils/constants';
 import CreateRoomModal from '../components/rooms/CreateRoomModal';
 
@@ -21,6 +21,7 @@ function CreateRoomsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [myRooms, setMyRooms] = useState([]);
+
   // --- TODO: Fetch user's rooms later ---
   // useEffect(() => {
   //   const fetchMyRooms = async () => { ... };
@@ -57,32 +58,28 @@ function CreateRoomsPage() {
     setError(null);
     try {
       const response = await axios.post(`${BASE_URL}/api/rooms`,
-        { name: roomName, language }, // Send name and language
+        { name: roomName, language },
         { headers: { Authorization: `bearer ${token}` } }
       );
       const newRoomId = response.data?.room?.roomId || response.data?.roomId;
       if (newRoomId) {
-        handleCloseModal(); // Close modal on success
+        handleCloseModal();
         navigate(`/room/${newRoomId}`);
       } else {
         console.error("Room ID not found:", response.data);
-        throw new Error("Could not create room. Missing room ID."); // Throw error to be caught below
+        throw new Error("Could not create room. Missing room ID.");
       }
     } catch (err) {
       console.error("Error creating room:", err);
-      // Set error state within the modal or pass it back up? For now, setting it here.
       setError(err.response?.data?.message || err.message || "Failed to create room.");
-      setIsLoading(false); // Ensure loading stops on error
-      // Keep modal open on error to show message or let user retry? Optional.
-      // handleCloseModal();
+      setIsLoading(false);
     } finally {
-       // setIsLoading(false); // Loading state might be better managed inside the modal
+       setIsLoading(false);
     }
   };
 
   return (
     <div className="space-y-8">
-      {/* Header & Create Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center">
@@ -90,16 +87,13 @@ function CreateRoomsPage() {
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Create or join rooms to code live with others.</p>
         </div>
-        <button
-          onClick={handleOpenModal}
-          className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap"
-        >
+        <button onClick={handleOpenModal} className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap">
           <PlusIcon /> Create New Room
         </button>
       </div>
 
-       {/* Display General Errors */}
-       {error && !isModalOpen && ( // Show general error only if modal is closed
+
+       {error && !isModalOpen && (
          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
            <p>{error}</p>
          </div>
@@ -146,10 +140,10 @@ function CreateRoomsPage() {
       <CreateRoomModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onCreate={createRoomApiCall} // Pass the API call function
-        isLoading={isLoading} // Pass loading state (or manage within modal)
-        error={error} // Pass error state (or manage within modal)
-        clearError={() => setError(null)} // Function to clear error
+        onCreate={createRoomApiCall}
+        isLoading={isLoading}
+        error={error}
+        clearError={() => setError(null)}
       />
     </div>
   );

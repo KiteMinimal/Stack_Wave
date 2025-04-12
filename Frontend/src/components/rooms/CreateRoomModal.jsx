@@ -1,29 +1,27 @@
 
-// src/components/rooms/CreateRoomModal.jsx
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Assuming framer-motion
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Placeholder Icons
+
 const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
 
 
 function CreateRoomModal({ isOpen, onClose, onCreate, isLoading, error, clearError }) {
   const [roomName, setRoomName] = useState('');
-  const [language, setLanguage] = useState('javascript'); // Default language
+  const [language, setLanguage] = useState('javascript');
 
   // Clear local error when modal opens or external error changes
   useEffect(() => {
       if (isOpen && clearError) {
-          clearError(); // Clear error from parent when modal opens
+          clearError();
       }
   }, [isOpen, error, clearError]);
 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Optional validation for roomName
     if (onCreate) {
-      onCreate({ roomName, language }); // Call the function passed from parent
+      onCreate({ roomName, language });
     }
   };
 
@@ -34,7 +32,6 @@ function CreateRoomModal({ isOpen, onClose, onCreate, isLoading, error, clearErr
     { value: 'java', label: 'Java' },
     { value: 'html', label: 'HTML' },
     { value: 'css', label: 'CSS' },
-    { value: 'plaintext', label: 'Plain Text' },
   ];
 
   return (
@@ -46,7 +43,7 @@ function CreateRoomModal({ isOpen, onClose, onCreate, isLoading, error, clearErr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm"
-          onClick={onClose} // Close on backdrop click
+          onClick={onClose}
         >
           <motion.div
             key="createRoomContent"
