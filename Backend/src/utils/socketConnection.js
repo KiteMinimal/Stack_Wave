@@ -2,6 +2,8 @@
 const { Server } = require("socket.io");
 const userModel = require("../models/user.model");
 const roomModel = require("../models/room.modal");
+const config = require("../config/config");
+const axios = require('axios');
 
 const socketConnection = (server) => {
     const io = new Server(server,{
@@ -10,10 +12,11 @@ const socketConnection = (server) => {
         }
     })
 
+    const JUDGE0_API_HOST = config.JUDGE0_API_HOST;
+    const JUDGE0_API_KEY = config.JUDGE0_API_KEY;
     const roomParticipants = {};
     const roomCodeStates = new Map();
     const roomSaveTimers = new Map();
-    
 
     function debounceAndSave(roomId, newCode) {
         const existingTimer = roomSaveTimers.get(roomId);
@@ -96,7 +99,7 @@ const socketConnection = (server) => {
 
             socket.to(roomId).emit('userJoined', roomParticipants[roomId][socket.id]);
 
-            socket.emit('roomData', { participantsList, currentCode: isRoomExist.codeContent });
+            socket.emit('roomData', { participantsList, currentCode: isRoomExist.codeContent, language: isRoomExist.language });
 
             await roomModel.findOneAndUpdate({ roomId: roomId },{ $addToSet: { participants: socket.user._id } });
 
@@ -122,6 +125,47 @@ const socketConnection = (server) => {
             roomCodeStates.set(roomId, newCode);
             io.to(roomId).emit("updateCode", newCode);
             debounceAndSave(roomId, newCode)
+        })
+
+        socket.on("runCode", async ({ roomId, languageId, code, stdin = "" }) => {
+            console.log(`[Run Code] Received request for language ${languageId}`);
+            if (!JUDGE0_API_HOST || !JUDGE0_API_KEY) {
+                console.error("[Run Code] Judge0 API host or key not configured.");
+                socket.emit('codeOutput', { stderr: "Code execution service is not configured on the server." });
+                return;
+            }
+
+            const options = {
+                method: 'POST',
+                url: `https://${JUDGE0_API_HOST}/submissions`,
+                params: { base64_encoded: 'false', wait: 'true', fields: '*' }, // wait=true to wait for result, fields=* for all details
+                headers: {
+                    'content-type': 'application/json',
+                    'X-RapidAPI-Key': JUDGE0_API_KEY,
+                    'X-RapidAPI-Host': JUDGE0_API_HOST
+                },
+                data: {
+                    language_id: languageId,
+                    source_code: code,
+                    stdin: stdin
+                }
+            };
+
+            try {
+                const response = await axios.request(options);
+                console.log('[Run Code] Judge0 Response:', response.data);
+                // Send result back ONLY to the user who initiated the run
+                socket.emit('codeOutput', response.data); // Pass the whole result object
+        
+            } catch (error) {
+                console.error('[Run Code] Judge0 API Error:', error.response?.data || error.message);
+                 // Send error details back to the user
+                 socket.emit('codeOutput', {
+                     stderr: error.response?.data?.message || error.message || 'Failed to execute code via external service.',
+                     status: { description: 'API Error' } // Provide some status
+                 });
+            }
+
         })
 
         socket.on("disconnect", async () => {

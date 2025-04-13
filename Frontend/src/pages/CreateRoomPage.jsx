@@ -31,6 +31,7 @@ function CreateRoomsPage() {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
+
   const handleJoinRoom = (e) => {
     e.preventDefault();
     setError(null);
@@ -50,7 +51,6 @@ function CreateRoomsPage() {
     }
   };
 
-  
   const createRoomApiCall = async ({ roomName, language }) => {
     setIsLoading(true);
     setError(null);

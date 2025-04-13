@@ -8,7 +8,9 @@ const _config = {
     GMAIL_PASS: process.env.GMAIL_PASS,
     REDIS_PORT: process.env.REDIS_PORT,
     REDIS_HOST: process.env.REDIS_HOST,
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    JUDGE0_API_HOST: process.env.JUDGE0_API_HOST,
+    JUDGE0_API_KEY: process.env.JUDGE0_API_KEY
 }
 
 const config = Object.freeze(_config);

@@ -28,10 +28,20 @@ function CreateRoomModal({ isOpen, onClose, onCreate, isLoading, error, clearErr
   // List of supported languages (adjust as needed)
   const supportedLanguages = [
     { value: 'javascript', label: 'JavaScript' },
+    { value: 'typescript', label: 'TypeScript' },
     { value: 'python', label: 'Python' },
     { value: 'java', label: 'Java' },
-    { value: 'html', label: 'HTML' },
-    { value: 'css', label: 'CSS' },
+
+    { value: 'c', label: 'C language' },
+    { value: 'c++', label: 'C++' },
+    { value: 'go', label: 'GO' },
+
+    { value: 'kotlin', label: 'Kotlin' },
+    { value: 'ruby', label: 'Ruby' },
+    { value: 'rust', label: 'Rust' },
+
+    { value: 'swift', label: 'Swift' },
+    { value: 'sql', label: 'SQL-(Lite)' },
   ];
 
   return (

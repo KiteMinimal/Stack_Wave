@@ -7,7 +7,15 @@ import { toast } from "react-toastify"
 
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+// import { python } from '@codemirror/lang-python';
+// import { java } from '@codemirror/lang-java';
+// import { rust } from '@codemirror/lang-rust';
+// import { go } from '@codemirror/lang-go';
+// import { cpp } from '@codemirror/lang-cpp';
+// import { swift } from '@codemirror/lang-swift';
+// import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
@@ -15,6 +23,7 @@ const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3
 const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M3.105 3.105a.75.75 0 01.814-.398l14.25 5.25a.75.75 0 010 1.388l-14.25 5.25a.75.75 0 01-.814-.398V3.105z" /></svg>;
 const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876V5.25a1.125 1.125 0 00-1.125-1.125h-1.5c-.621 0-1.125.504-1.125 1.125v3.375c0 .621.504 1.125 1.125 1.125h1.5a1.125 1.125 0 011.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-1.5a1.125 1.125 0 00-1.125 1.125v3.375m1.5-4.5" /></svg>;
 const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>;
+const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
 
 
 function RoomPage() {
@@ -28,28 +37,27 @@ function RoomPage() {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [code, setCode] = useState(''); 
-    const [language, setLanguage] = useState(javascript()); 
+    const [language, setLanguage] = useState({ name: "javascript" });
 
     const socketRef = useRef(null);
     const editorRef = useRef(null);
     const chatMessagesEndRef = useRef(null);
+
+    const [output, setOutput] = useState(null); // { stdout: string|null, stderr: string|null, time: string|null, status: string|null }
+    const [isRunning, setIsRunning] = useState(false);
+    const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(false);
 
 
     useEffect(() => {
         chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-
-    // --- Editor Code Change Handler --- (Added)
-    // useCallback to prevent unnecessary re-renders of CodeMirror if passed as prop
     const onCodeChange = useCallback((value, viewUpdate) => {
         setCode(value);
         if (socketRef.current && isConnected) {
-             console.log('Emitting codeChange:', value.substring(0,10) + '...');
              socketRef.current.emit('codeChange', { roomId, newCode: value });
         }
     }, [roomId, isConnected]);
-
 
     useEffect(() => {
         if (!user || !token) {
@@ -77,13 +85,13 @@ function RoomPage() {
             navigate("/rooms")
         });
 
-        socket.on('roomData', ({ participantsList, currentCode }) => {
+        socket.on('roomData', ({ participantsList, currentCode, language }) => {
             console.log('Received initial room data:', participantsList, currentCode?.substring(0,10) + '...');
             setParticipants(participantsList || []);
             if (currentCode !== undefined && currentCode !== null) {
                setCode(currentCode);
             }
-            // TODO: Set initial language if provided by backend
+            setLanguage({name: language});
         });
 
 
@@ -113,6 +121,13 @@ function RoomPage() {
             setParticipants((prev) => prev.filter(p => p._id !== userId));
         });
 
+        // Inside the main useEffect for socket listeners
+        socket.on('codeOutput', (result) => { // result: { stdout, stderr, time, memory, status: {id, description}, compile_output }
+            console.log('Received codeOutput:', result);
+            setOutput(result);
+            setIsRunning(false);
+        });
+
         return () => {
             if (socketRef.current) {
                 console.log(`Disconnecting socket: ${socketRef.current.id}`);
@@ -122,10 +137,12 @@ function RoomPage() {
                 setParticipants([]);
                 setMessages([]);
                 setCode('');
+                setOutput(null);
+                setIsRunning(false);
+                setIsOutputPanelOpen(false);
             }
         };
     }, [roomId, user, token, navigate]);
-
  
     const handleSendMessage = (e) => {
         e.preventDefault();
@@ -146,22 +163,72 @@ function RoomPage() {
         });
     };
 
+    const handleRunCode = () => {
+        if (!code || !socketRef.current || !isConnected) return;
+    
+        console.log("Requesting code execution...");
+        setIsRunning(true);
+        setOutput(null);
+        setIsOutputPanelOpen(true);
+    
+        const languageId = getJudge0LanguageId(language.name);
+    
+        if (!languageId) {
+            console.error("Unsupported language for execution:", language.name);
+            setOutput({ stderr: `Execution for language "${language.name}" is not supported yet.` });
+            setIsRunning(false);
+            return;
+        }
+    
+        socketRef.current.emit('runCode', {
+            roomId, // Needed? Maybe not if output is just for the user
+            languageId, // Send the ID Judge0 understands
+            code,
+            // stdin: '...' // Optional standard input can be added here
+        });
+    };
+
+    function getJudge0LanguageId(langName) {
+        const langMap = {
+            'ruby': 72,
+            'sql': 82,
+            'swift': 83,
+            'java': 96,
+            'typescript': 101,
+            'javascript': 102,
+            'c++': 105,
+            'go': 107,
+            'rust': 108,
+            'python': 109,
+            'c': 110,
+            'kotlin': 111
+        };
+        return langMap[langName.toLowerCase()] > 0 ? langMap[langName.toLowerCase()] : null;
+    }
+
 
     return (
         <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
 
-            {/* Left Pane: Code Editor Area */}
             <div className="flex-grow lg:w-3/4 bg-gray-200 dark:bg-gray-900 p-1 lg:p-2 h-1/2 lg:h-full overflow-y-auto">
-                 <CodeMirror
+                <div className='text-end'>
+                <button onClick={handleRunCode} disabled={isRunning || !isConnected} className="my-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded shadow disabled:opacity-50">
+                    {isRunning ? 'Running...' : 'Run Code'}
+                </button>
+                </div>
+
+                <CodeMirror
                     ref={editorRef}
                     value={code}
                     height="100%"
                     theme={document.documentElement.classList.contains('dark') ? okaidia : 'light'}
-                    extensions={[language]}
+                    extensions={[javascript()]}
                     onChange={onCodeChange}
                     className="h-full text-sm rounded shadow-inner" 
-                    // basicSetup={{ lineNumbers: true, foldGutter: true }}
-                 />
+                    basicSetup={{ lineNumbers: true, foldGutter: true }}
+                />
+
+               
             </div>
 
             {/* Right Pane: Sidebar (Participants + Chat) */}
@@ -237,7 +304,53 @@ function RoomPage() {
                         </button>
                     </form>
                 </div>
+
             </div>
+
+            <AnimatePresence>
+                {isOutputPanelOpen && (
+                    <motion.div
+                        key="output-panel"
+                        className="absolute w-[73%] bottom-0 left-0 right-0 z-20 h-1/3 lg:h-1/4 border-t-2 border-gray-300 dark:border-gray-700 shadow-lg"
+                        initial={{ y: "100%", opacity: 0 }} // Start below screen
+                        animate={{ y: "0%", opacity: 1 }}   // Animate to original position
+                        exit={{ y: "100%", opacity: 0 }}     // Animate down on exit
+                        transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }} // Smooth transition
+                    >
+                         {/* Panel Content */}
+                         <div className="h-full bg-gray-900 text-white font-mono text-xs flex flex-col overflow-hidden">
+                             {/* Panel Header */}
+                             <div className="flex justify-between items-center p-2 border-b border-gray-700 flex-shrink-0 bg-gray-800">
+                                 <h4 className="text-gray-300 text-sm font-sans font-semibold">Output</h4>
+                                 <button
+                                     onClick={() => setIsOutputPanelOpen(false)}
+                                     className="p-1 text-gray-400 hover:text-white focus:outline-none"
+                                     aria-label="Close Output Panel"
+                                 >
+                                    <CloseIcon />
+                                 </button>
+                             </div>
+
+                            {/* Output Content Area */}
+                             <div className="flex-grow p-3 overflow-y-auto">
+                                 {isRunning && <p className="text-yellow-400 animate-pulse">Executing code...</p>}
+                                 {output && (
+                                     <div>
+                                          {output.status && <p className="mb-1 text-gray-400">Status: <span className={`font-semibold ${output.status.id === 3 ? 'text-green-400' : 'text-red-400'}`}>{output.status.description}</span></p>}
+                                          {output.time && <p className="mb-1 text-gray-400">Time: {output.time}s</p>}
+                                          {output.memory && <p className="mb-2 text-gray-400">Memory: {output.memory} KB</p>}
+
+                                          {output.stdout && ( <pre className="whitespace-pre-wrap break-words text-green-300">{output.stdout}</pre> )}
+                                          {output.stderr && ( <pre className="whitespace-pre-wrap break-words text-red-400 mt-1">{output.stderr}</pre> )}
+                                          {output.compile_output && ( <pre className="whitespace-pre-wrap break-words text-yellow-400 mt-1">Compiler Output: {output.compile_output}</pre> )}
+                                     </div>
+                                 )}
+                                 {!isRunning && !output && <p className="text-gray-500 italic">Output will appear here.</p>}
+                             </div>
+                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

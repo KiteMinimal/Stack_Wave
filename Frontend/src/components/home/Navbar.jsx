@@ -73,7 +73,7 @@ const Navbar = () => {
             <div className={`dropdown dropdown-end dark:bg-gray-700 dark:text-white""`}>
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
-                  <img alt="Tailwind CSS Navbar component" src={user?.avatar} />
+                  <img alt="Tailwind CSS Navbar component" src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}&size=20&background=random`} />
                 </div>
               </div>
 
