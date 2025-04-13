@@ -1,8 +1,9 @@
 
-import React, { useEffect, useState, useRef, useCallback } from 'react'; // Added useCallback
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import io from 'socket.io-client';
+import { toast } from "react-toastify"
 
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -30,10 +31,10 @@ function RoomPage() {
     const [language, setLanguage] = useState(javascript()); 
 
     const socketRef = useRef(null);
-    const editorRef = useRef(null); 
-    const chatMessagesEndRef = useRef(null); 
+    const editorRef = useRef(null);
+    const chatMessagesEndRef = useRef(null);
 
-    // --- Auto-scroll chat --- (Added)
+
     useEffect(() => {
         chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
@@ -43,17 +44,13 @@ function RoomPage() {
     // useCallback to prevent unnecessary re-renders of CodeMirror if passed as prop
     const onCodeChange = useCallback((value, viewUpdate) => {
         setCode(value);
-        // Emit code change event ONLY if it wasn't triggered by a socket update
-        // We need a way to distinguish local changes from remote changes if possible
-        // Simple approach for now: always emit, backend can prevent echo back to sender
         if (socketRef.current && isConnected) {
-             // console.log('Emitting codeChange:', value.substring(0,10) + '...'); // Debug log
+             console.log('Emitting codeChange:', value.substring(0,10) + '...');
              socketRef.current.emit('codeChange', { roomId, newCode: value });
         }
     }, [roomId, isConnected]);
 
 
-    // Socket Connection useEffect
     useEffect(() => {
         if (!user || !token) {
             navigate('/login');
@@ -64,7 +61,6 @@ function RoomPage() {
         const socket = socketRef.current;
 
         socket.on('connect', () => {
-            console.log(`Socket connected: ${socket.id}`);
             setIsConnected(true);
             socket.emit('joinRoom', { roomId, user });
         });
@@ -74,25 +70,24 @@ function RoomPage() {
             setIsConnected(false);
         });
 
-        socket.on('connect_error', (error) => {
+        socket.on('error', (error) => {
             console.error('Socket connection error:', error);
+            toast.error(error.message);
             setIsConnected(false);
+            navigate("/rooms")
         });
 
         socket.on('roomData', ({ participantsList, currentCode }) => {
             console.log('Received initial room data:', participantsList, currentCode?.substring(0,10) + '...');
             setParticipants(participantsList || []);
             if (currentCode !== undefined && currentCode !== null) {
-               setCode(currentCode); // Set initial code
+               setCode(currentCode);
             }
             // TODO: Set initial language if provided by backend
         });
 
-        // Listen for code updates from others
-        socket.on('updateCode', (newCode) => { // Added listener
-            // console.log('Received updateCode:', newCode.substring(0,10) + '...'); // Debug log
-             // Check if the incoming code is different from the current local code
-             // This helps prevent unnecessary re-renders or cursor jumps if the update is from self
+
+        socket.on('updateCode', (newCode) => {
              setCode(prevCode => {
                  if (prevCode !== newCode) {
                      return newCode;
@@ -109,6 +104,7 @@ function RoomPage() {
 
         socket.on('userJoined', (newUser) => {
              console.log('User joined:', newUser);
+             toast.success('User joined:' + newUser.username);
              setParticipants((prev) => [...prev, newUser]);
         });
 
@@ -141,10 +137,9 @@ function RoomPage() {
     };
 
     const handleCopyLink = () => {
-        const roomUrl = window.location.href; // Gets the full current URL
+        const roomUrl = window.location.href;
         navigator.clipboard.writeText(roomUrl).then(() => {
           setCopied(true);
-          // Reset copied state after a short delay
           setTimeout(() => setCopied(false), 1500);
         }).catch(err => {
           console.error('Failed to copy room link: ', err);
@@ -172,9 +167,7 @@ function RoomPage() {
             {/* Right Pane: Sidebar (Participants + Chat) */}
             <div className="lg:w-1/4 flex flex-col bg-gray-100 dark:bg-gray-800 border-l border-gray-300 dark:border-gray-700 h-1/2 lg:h-full"> 
 
-                {/* Participants List */}
-                <div className="p-3 border-b border-gray-300 dark:border-gray-700 flex-shrink-0"> {/* Added flex-shrink-0 */}
-                    {/* ... (participants list code - same as before) ... */}
+                <div className="p-3 border-b border-gray-300 dark:border-gray-700 flex-shrink-0">
                      <h3 className="text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">
                          Participants ({participants.length})
                          <span className={`ml-2 inline-block w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Connected' : 'Disconnected'}></span>
@@ -196,16 +189,14 @@ function RoomPage() {
                      <ul className="space-y-1 max-h-32 overflow-y-auto text-xs">
                           {participants.map(p => (
                               <li key={p._id} className="flex items-center space-x-1.5 text-gray-700 dark:text-gray-300">
-                                  <img className="w-5 h-5 rounded-full object-cover" src={p.avatarUrl || `https://ui-avatars.com/api/?name=${p.name}&size=20&background=random`} alt={p.name}/>
-                                  <span>{p.name} {p._id === user?._id ? '(You)' : ''}</span>
+                                  <img className="w-5 h-5 rounded-full object-cover" src={p.avatar || `https://ui-avatars.com/api/?name=${p.username}&size=20&background=random`} alt={p.username}/>
+                                  <span>{p.username} {p._id === user?._id ? '(You)' : ''}</span>
                               </li>
                           ))}
                           {participants.length === 0 && <li className="text-gray-400 italic">Just you</li>}
                       </ul>
-
                 </div>
 
-                {/* Chat Area */}
                 <div className="flex-grow p-3 flex flex-col overflow-hidden">
                     <div className="flex-grow overflow-y-auto mb-2 space-y-2 pr-1">
                         {messages.map((msg, index) => (
@@ -221,12 +212,10 @@ function RoomPage() {
                                  </div>
                             </div>
                         ))}
-                         {/* Element to scroll to */}
                          <div ref={chatMessagesEndRef} />
                          {messages.length === 0 && <p className="text-center text-sm text-gray-400 italic mt-4">No messages yet.</p>}
                     </div>
 
-                    {/* Chat Input Form (Added) */}
                     <form onSubmit={handleSendMessage} className="flex-shrink-0 flex items-center space-x-2 pt-2 border-t border-gray-300 dark:border-gray-700">
                         <label htmlFor="chatInput" className="sr-only">Chat Message</label>
                         <input

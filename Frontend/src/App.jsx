@@ -80,7 +80,7 @@ function App() {
               <Route path="/ask" element={<AskPage />} />
               <Route path="/question/:id" element={<QuestionDetailsPage />} />
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
-              <Route path="/room/:id" element={<RoomPage/>} />
+              <Route path="/room/:roomId" element={<RoomPage/>} />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>
