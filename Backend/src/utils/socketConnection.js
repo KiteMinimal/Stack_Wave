@@ -13,22 +13,7 @@ const socketConnection = (server) => {
     const roomParticipants = {};
     const roomCodeStates = new Map();
     const roomSaveTimers = new Map();
-
-    // async function saveCodeToDb(roomId, code) {
-    //     try {
-    //         const latestCode = roomCodeStates.get(roomId);
-    //         if (latestCode !== undefined) {
-    //              await roomModel.findOneAndUpdate({ roomId }, { codeContent: latestCode });
-    //              console.log(`[DB Save] Code for room ${roomId} saved successfully.`);
-    //         } else {
-    //              console.warn(`[DB Save] Room ${roomId} not found in memory state during save.`);
-    //         }
-    //     } catch (error) {
-    //         console.error(`[DB Save] Failed to save code for room ${roomId}:`, error);
-    //     } finally {
-            
-    //     }
-    // }
+    
 
     function debounceAndSave(roomId, newCode) {
         const existingTimer = roomSaveTimers.get(roomId);
@@ -37,7 +22,7 @@ const socketConnection = (server) => {
         }
     
         const newTimer = setTimeout( async() => {
-            const roomData = await roomModel.findOneAndUpdate({roomId}, { codeContent: newCode },{new:true});
+            const roomData = await roomModel.findOneAndUpdate({roomId}, { codeContent: newCode },{ new:true });
             console.log(roomData);
             roomSaveTimers.delete(roomId);
         }, 1500);
