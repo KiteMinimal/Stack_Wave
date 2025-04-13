@@ -11,6 +11,40 @@ const socketConnection = (server) => {
     })
 
     const roomParticipants = {};
+    const roomCodeStates = new Map();
+    const roomSaveTimers = new Map();
+
+    // async function saveCodeToDb(roomId, code) {
+    //     try {
+    //         const latestCode = roomCodeStates.get(roomId);
+    //         if (latestCode !== undefined) {
+    //              await roomModel.findOneAndUpdate({ roomId }, { codeContent: latestCode });
+    //              console.log(`[DB Save] Code for room ${roomId} saved successfully.`);
+    //         } else {
+    //              console.warn(`[DB Save] Room ${roomId} not found in memory state during save.`);
+    //         }
+    //     } catch (error) {
+    //         console.error(`[DB Save] Failed to save code for room ${roomId}:`, error);
+    //     } finally {
+            
+    //     }
+    // }
+
+    function debounceAndSave(roomId, newCode) {
+        const existingTimer = roomSaveTimers.get(roomId);
+        if (existingTimer) {
+            clearTimeout(existingTimer);
+        }
+    
+        const newTimer = setTimeout( async() => {
+            const roomData = await roomModel.findOneAndUpdate({roomId}, { codeContent: newCode },{new:true});
+            console.log(roomData);
+            roomSaveTimers.delete(roomId);
+        }, 1500);
+    
+        roomSaveTimers.set(roomId, newTimer);
+    }
+    
 
     io.use((socket, next) => {
         const token = socket.handshake?.query?.token;
@@ -99,9 +133,10 @@ const socketConnection = (server) => {
             io.to(roomId).emit("newMessage", message)
         })
 
-        socket.on("codeChange", async ({roomId, newCode}) => {
+        socket.on("codeChange", ({roomId, newCode}) => {
+            roomCodeStates.set(roomId, newCode);
             io.to(roomId).emit("updateCode", newCode);
-            await roomModel.findOneAndUpdate({roomId}, { codeContent: newCode });
+            debounceAndSave(roomId, newCode)
         })
 
         socket.on("disconnect", async () => {
