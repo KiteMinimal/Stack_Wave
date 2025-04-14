@@ -63,7 +63,7 @@ const findRoomsController = async function(req,res){
             })
         }
 
-        const rooms = await roomModel.find({host: userId})
+        const rooms = await roomModel.find({host: userId}).populate("participants","username avatar")
 
         res.status(200).json({
             message: "Rooms fetched successfully",
