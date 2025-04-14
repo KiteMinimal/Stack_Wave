@@ -4,7 +4,3 @@
 @plugin "daisyui"{
     themes: light --default, dark --prefersdark;
 }
-
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}

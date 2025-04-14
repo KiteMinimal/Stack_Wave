@@ -18,6 +18,7 @@ import axios from "axios";
 import { BASE_URL } from "./utils/constants";
 import { addUser } from "./store/userSlice";
 import RoomPage from "./pages/RoomPage";
+import EditQuestionPage from "./pages/EditQuestionPage";
 
 function App() {
 
@@ -79,6 +80,7 @@ function App() {
               <Route path="/questions" element={<QuestionPage/>} />
               <Route path="/ask" element={<AskPage />} />
               <Route path="/question/:id" element={<QuestionDetailsPage />} />
+              <Route path="/question/:id/edit" element={<EditQuestionPage/>} />
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
               <Route path="/room/:roomId" element={<RoomPage/>} />
             </Route>
