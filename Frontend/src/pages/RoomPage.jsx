@@ -6,16 +6,9 @@ import io from 'socket.io-client';
 import { toast } from "react-toastify"
 
 import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-// import { python } from '@codemirror/lang-python';
-// import { java } from '@codemirror/lang-java';
-// import { rust } from '@codemirror/lang-rust';
-// import { go } from '@codemirror/lang-go';
-// import { cpp } from '@codemirror/lang-cpp';
-// import { swift } from '@codemirror/lang-swift';
-// import { sql } from '@codemirror/lang-sql';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { motion, AnimatePresence } from 'framer-motion';
+import getLanguageExtension from '../components/rooms/getLanguageExtension';
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
@@ -38,6 +31,7 @@ function RoomPage() {
     const [newMessage, setNewMessage] = useState('');
     const [code, setCode] = useState(''); 
     const [language, setLanguage] = useState({ name: "javascript" });
+    const [editorLanguageExtension, setEditorLanguageExtension] = useState(() => getLanguageExtension('javascript'));
 
     const socketRef = useRef(null);
     const editorRef = useRef(null);
@@ -92,6 +86,7 @@ function RoomPage() {
                setCode(currentCode);
             }
             setLanguage({name: language});
+            setEditorLanguageExtension(getLanguageExtension(language));
         });
 
 
@@ -211,10 +206,11 @@ function RoomPage() {
         <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
 
             <div className="flex-grow lg:w-3/4 bg-gray-200 dark:bg-gray-900 p-1 lg:p-2 h-1/2 lg:h-full overflow-y-auto">
-                <div className='text-end'>
-                <button onClick={handleRunCode} disabled={isRunning || !isConnected} className="my-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded shadow disabled:opacity-50">
-                    {isRunning ? 'Running...' : 'Run Code'}
-                </button>
+                <div className='flex items-center justify-between'>
+                    <p>{language.name}</p>
+                    <button onClick={handleRunCode} disabled={isRunning || !isConnected} className="my-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded shadow disabled:opacity-50">
+                        {isRunning ? 'Running...' : 'Run Code'}
+                    </button>
                 </div>
 
                 <CodeMirror
@@ -222,7 +218,7 @@ function RoomPage() {
                     value={code}
                     height="100%"
                     theme={document.documentElement.classList.contains('dark') ? okaidia : 'light'}
-                    extensions={[javascript()]}
+                    extensions={[editorLanguageExtension]}
                     onChange={onCodeChange}
                     className="h-full text-sm rounded shadow-inner" 
                     basicSetup={{ lineNumbers: true, foldGutter: true }}

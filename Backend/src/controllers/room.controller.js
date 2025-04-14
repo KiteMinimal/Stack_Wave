@@ -54,6 +54,31 @@ const createRoomcontroller = async function(req,res){
     }
 }
 
+const findRoomsController = async function(req,res){
+    try{
+        const userId = req.user._id;
+        if(!userId){
+            return res.status(401).json({
+                message: "User not found"
+            })
+        }
+
+        const rooms = await roomModel.find({host: userId})
+
+        res.status(200).json({
+            message: "Rooms fetched successfully",
+            rooms
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
-    createRoomcontroller
+    createRoomcontroller,
+    findRoomsController
 }
