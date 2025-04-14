@@ -36,7 +36,6 @@ function QuestionsPage() {
 
   const handleFilterChange = (filter) => {
       setActiveFilter(filter);
-      // TODO: Add logic to refetch questions based on the new filter
       console.log("Filter changed to:", filter);
   }
 

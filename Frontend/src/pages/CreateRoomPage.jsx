@@ -149,6 +149,7 @@ function CreateRoomsPage() {
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">My Rooms</h2>
         <div className="text-center text-gray-500 dark:text-gray-400 py-12 border-gray-300 dark:border-gray-600 rounded-md">
+          {myRooms.length <= 0 && <p>No rooms found yet ...</p> }
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                  {myRooms.map(room => <RoomCard key={room._id} room={room} onDelete={(roomId) => handleDeleteRooms(roomId)} />)}
              </div>

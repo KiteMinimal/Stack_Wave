@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,11 +12,15 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { BASE_URL } from '../utils/constants';
 import Loading from '../components/Loading';
 import AnswerItem from '../components/AnswerItem';
+import ConfirmationModal from '../components/ConfirmationModal';
+import { toast } from 'react-toastify';
 
 
 const UpVoteIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>;
 const DownVoteIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>;
 const UserAvatar = ({ src, alt, size = "w-8 h-8" }) => <img className={`rounded-full object-cover ${size}`} src={src} alt={alt} />;
+const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>;
 
 // Markdown Components for rendering Question body and Answer body
 const MarkdownComponents = {
@@ -38,7 +42,8 @@ const MarkdownComponents = {
 
 function QuestionDetailsPage() {
   const { id: questionId } = useParams();
-  const { token } = useSelector(state => state.user);
+  const { token, user: loggedInUser } = useSelector(state => state.user);
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -51,10 +56,14 @@ function QuestionDetailsPage() {
 
   const [reloadOnVote, setReloadOnVote] = useState(false);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
+
+  // Fetching Questions
   useEffect(() => {
     const fetchQuestionDetails = async () => {
-      // setLoading(true);
       setError(null);
       try {
         const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`,{
@@ -70,12 +79,11 @@ function QuestionDetailsPage() {
       } catch (err) {
         console.error("Error fetching question details:", err);
         setError(err.response?.data?.message || 'Failed to load question details.');
-      } finally {
-        setLoading(false);
       }
     };
     fetchQuestionDetails();
   }, [questionId, reloadOnVote]);
+
 
   // Fetch Answers
   useEffect(() => {
@@ -147,6 +155,32 @@ function QuestionDetailsPage() {
     })
   }
 
+  const handleDeleteClick = () => {
+    console.log("Delete button clicked");
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+       await axios.delete(`${BASE_URL}/api/questions/${questionId}`, {
+           headers: { Authorization: `bearer ${token}` }
+       });
+      setShowDeleteConfirm(false);
+      toast.success("Question deleted successfully");
+      navigate('/questions');
+
+    } catch (err) {
+        console.error("Error deleting question:", err);
+        setDeleteError(err.response?.data?.message || "Failed to delete question.");
+        setShowDeleteConfirm(false);
+    } finally {
+        setIsDeleting(false);
+    }
+};
+
+
 
   if (loading) return <div className="p-6 mt-40 text-center"> <Loading/> </div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
@@ -154,15 +188,35 @@ function QuestionDetailsPage() {
 
 
   const { title, body, authorId: author, tags, votes, views, createdAt } = question;
+  const isAuthor = loggedInUser && question && ( loggedInUser._id === author?._id );
 
   return (
     <div className="space-y-8">
 
       <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-lg shadow">
         <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">
                 {title}
             </h1>
+            {isAuthor && (
+                    <div className="flex items-center space-x-2 flex-shrink-0 mt-2 sm:mt-0">
+                        <Link
+                            to={`/question/${questionId}/edit`}
+                            className="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                           <EditIcon /> Edit
+                        </Link>
+                        <button
+                            onClick={handleDeleteClick}
+                            className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                           <TrashIcon /> Delete
+                        </button>
+                    </div>
+                )}
+          </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-2">
                  <span>Asked {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'N/A'}</span>
                  <span>Viewed {views || 0} times</span>
@@ -268,6 +322,19 @@ function QuestionDetailsPage() {
                 </button>
              </form>
          </div>
+
+         <ConfirmationModal
+            isOpen={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            onConfirm={handleConfirmDelete}
+            title="Confirm Deletion"
+            message={`Are you sure you want to delete this question? This action cannot be undone.`}
+            confirmText="Delete"
+            cancelText="Cancel"
+            confirmButtonVariant="danger"
+            isLoading={isDeleting}
+       />
+
     </div>
   );
 }

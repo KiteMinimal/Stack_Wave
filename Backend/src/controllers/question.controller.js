@@ -145,15 +145,15 @@ const updateController = async function(req,res){
 const deleteController = async function(req,res){
     try{
         const id = req.params.id;
+        if(!id){
+            return res.status(400).json({message: "id is empty"})
+        }
+
         if(!mongoose.Types.ObjectId.isValid(id)){
             return res.status(400).json({message:"id is not valid"})
         }
 
         const userId = req.user._id;
-
-        if(!id){
-            return res.status(400).json({message: "id is empty"})
-        }
 
         const isQuestionExist = await questionModel.findById(id);
 
