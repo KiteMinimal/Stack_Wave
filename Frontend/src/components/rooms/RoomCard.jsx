@@ -15,7 +15,7 @@ function RoomCard({ room, onDelete }) {
   const handleDeleteClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (window.confirm(`Are you sure you want to delete room "${room.name || room.roomId}"? This cannot be undone.`)) {
+      if (window.confirm(`Are you sure you want to delete room "${room.name || room.roomId}"?.`)) {
           if (onDelete) {
               onDelete(room.roomId);
           }

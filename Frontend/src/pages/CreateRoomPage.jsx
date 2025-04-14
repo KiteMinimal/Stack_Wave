@@ -88,6 +88,19 @@ function CreateRoomsPage() {
     }
   };
 
+  const handleDeleteRooms = (roomId) => {
+    axios.delete(BASE_URL + `/api/room/delete/${roomId}`, {
+      headers: { Authorization: `bearer ${token}`}
+    })
+    .then((res) => {
+      const deletedRoom = res.data.room;
+      setMyRooms(prev => prev.filter((item) => item._id !== deletedRoom._id))
+    })
+    .catch((err) => {
+      setError(err.data.response.message);
+    })
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -137,7 +150,7 @@ function CreateRoomsPage() {
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">My Rooms</h2>
         <div className="text-center text-gray-500 dark:text-gray-400 py-12 border-gray-300 dark:border-gray-600 rounded-md">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                 {myRooms.map(room => <RoomCard key={room._id} room={room} />)}
+                 {myRooms.map(room => <RoomCard key={room._id} room={room} onDelete={(roomId) => handleDeleteRooms(roomId)} />)}
              </div>
         </div>
       </div>

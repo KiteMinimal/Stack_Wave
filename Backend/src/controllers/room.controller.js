@@ -78,7 +78,31 @@ const findRoomsController = async function(req,res){
     }
 }
 
+const deleteRoomController = async function(req,res){
+    try{
+        const roomId = req.params.id;
+        if(!roomId){
+            return res.status(400).json({
+                message: "RoomId is not found"
+            })
+        }
+
+        const room = await roomModel.findOneAndDelete({ roomId },{ new:true });
+
+        res.status(200).json({
+            message: "room deleted successfully",
+            room
+        })
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     createRoomcontroller,
-    findRoomsController
+    findRoomsController,
+    deleteRoomController
 }
