@@ -9,7 +9,9 @@ const commentSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        required: [true,"content is required"]
+        required: [true,"content is required"],
+        maxLength: 1000,
+        trim: true
     },
     authorId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +23,7 @@ const commentSchema = new mongoose.Schema({
         ref: "Comment",
         default: null
     }
-})
+},{ timestamps : true })
 
 const commentModel = mongoose.model("Comment", commentSchema);
 

@@ -21,7 +21,19 @@ const answerSchema = new mongoose.Schema({
     vote: {
         type: Number,
         default: 0
-    }
+    },
+    upvotedby: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ],
+    downvotedby: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ],
     
 },{ timestamps: true })
 
