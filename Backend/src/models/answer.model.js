@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const answerSchema = new mongoose.Schema({
     questionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Question"
+        ref: "Question",
+        required: [true, "questionId is required"],
     },
     content: {
         type: String,
@@ -14,7 +15,8 @@ const answerSchema = new mongoose.Schema({
     },
     authorId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: [true, "authorId is required"],
     },
     vote: {
         type: Number,
