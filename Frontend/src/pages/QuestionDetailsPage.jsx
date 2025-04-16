@@ -58,6 +58,8 @@ function QuestionDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
+  console.log(answers);
+  
 
   useEffect(() => {
     const fetchQuestionDetails = async () => {
@@ -179,6 +181,10 @@ function QuestionDetailsPage() {
     }
   };
 
+  const handleAnswerDeleted = (answerId) => {
+    setAnswers(prev => prev.filter((val) => val._id.toString() !== answerId.toString()))
+  }
+
 
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
   if (!question) return <div className="p-6 text-center">Question not found.</div>;
@@ -287,7 +293,7 @@ function QuestionDetailsPage() {
                         questionId={questionId}
                         loggedInUser={loggedInUser}
                         token={token}
-                        onAnswerDeleted={"handleAnswerDeleted"}
+                        onAnswerDeleted={(id) => handleAnswerDeleted(id)}
                       />
                   ))}
               </div>
