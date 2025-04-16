@@ -1,6 +1,7 @@
 
 const answerModel = require("../models/answer.model");
 const commentModel = require("../models/comment.model");
+const questionModel = require("../models/question.model");
 const userModel = require("../models/user.model");
 
 
@@ -21,6 +22,13 @@ const addAnswerController = async function(req,res){
             })
         }
 
+        const question = await questionModel.findById(questionId);
+        if (!question) {
+            return res.status(404).json({
+                message: "Question with the provided ID does not exist."
+            });
+        }
+
         const { content } = req.body;
 
         if(!content){
@@ -38,6 +46,9 @@ const addAnswerController = async function(req,res){
         const user = await userModel.findById(userId);
         user.answerGivenCount++;
         await user.save();
+
+        question.answersCount++;
+        await question.save();
 
         res.status(201).json({
             message: "answer created successfully",
@@ -135,6 +146,10 @@ const deleteAnswerController = async function(req,res){
             })
         }
 
+        const question = await questionModel.findById(isAnswerExist?.questionId);
+        question.answersCount--;
+        await question.save();
+
         await answerModel.findByIdAndDelete(answerId);
 
         const user = await userModel.findById(userId);
@@ -158,7 +173,7 @@ const deleteAnswerController = async function(req,res){
 const upVoteAnswerController = async function(req,res){
     try{
         const answerId = req.params?.answerId;
-        const userId = req.user?._id
+        const userId = req.user?._id;
 
         if(!userId){
             return res.status(401).json({
@@ -185,11 +200,27 @@ const upVoteAnswerController = async function(req,res){
             })
         }
 
-        isAnswerExist.vote++;
+        let alreadyUpVoted = isAnswerExist.upvotedby.some(id => id.toString() === userId.toString());
+        let alreadyDownVoted = isAnswerExist.downvotedby.some(id => id.toString() === userId.toString());
+
+        if(alreadyUpVoted){
+            isAnswerExist.upvotedby = isAnswerExist.upvotedby.filter((id) => id.toString() !== userId.toString());
+            isAnswerExist.vote--;
+        }
+        else if(alreadyDownVoted){
+            isAnswerExist.downvotedby = isAnswerExist.downvotedby.filter((id) => id.toString() !== userId.toString());
+            isAnswerExist.upvotedby.push(userId);
+            isAnswerExist.vote += 2;
+        }
+        else{
+            isAnswerExist.upvotedby.push(userId);
+            isAnswerExist.vote++;
+        }
+
         await isAnswerExist.save();
 
         res.status(200).json({
-            message: "answer upVote sucessfully",
+            message: "Answer vote updated successfully",
             newVoteCount: isAnswerExist.vote
         })
 
@@ -213,7 +244,7 @@ const downVoteAnswerController = async function(req,res){
         }
 
         if(!answerId){
-            return res.status(400).json({
+            return res.status(404).json({
                 message: "AnswerId is required"
             })
         }
@@ -229,9 +260,26 @@ const downVoteAnswerController = async function(req,res){
             return res.status(403).json({
                 message: "User cannot vote on their own answer"
             })
-        }   
+        }
 
-        isAnswerExist.vote--;
+        let alreadyDownVoted = isAnswerExist.downvotedby.some(id => id.toString() === userId.toString());
+        let alreadyUpVoted = isAnswerExist.upvotedby.some(id => id.toString() === userId.toString());
+
+        if(alreadyDownVoted){
+            isAnswerExist.downvotedby = isAnswerExist.downvotedby.filter(id => id.toString() !== userId.toString());
+            isAnswerExist.vote++;
+        }
+        else if(alreadyUpVoted){
+            isAnswerExist.upvotedby = isAnswerExist.upvotedby.filter(id => id.toString() !== userId.toString());
+            isAnswerExist.downvotedby.push(userId);
+            isAnswerExist.vote -= 2;
+        }
+        else{
+            isAnswerExist.downvotedby.push(userId);
+            isAnswerExist.vote--;
+        }
+
+
         await isAnswerExist.save();
 
         res.status(200).json({
