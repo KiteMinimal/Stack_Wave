@@ -10,7 +10,6 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { BASE_URL } from '../utils/constants';
-import Loading from '../components/Loading';
 import AnswerItem from '../components/AnswerItem';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { toast } from 'react-toastify';
@@ -47,7 +46,6 @@ function QuestionDetailsPage() {
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [newAnswerBody, setNewAnswerBody] = useState('');
@@ -61,7 +59,6 @@ function QuestionDetailsPage() {
   const [deleteError, setDeleteError] = useState(null);
 
 
-  // Fetching Question
   useEffect(() => {
     const fetchQuestionDetails = async () => {
       setError(null);
@@ -72,7 +69,6 @@ function QuestionDetailsPage() {
 
         if (response.data) {
           setQuestion(response.data.question);
-          setAnswers(response.data.answers || []);
         } else {
           setError('Question not found.');
         }
@@ -86,19 +82,24 @@ function QuestionDetailsPage() {
   }, [questionId, reloadOnVote]);
 
 
-  // Fetch Answers
   useEffect(() => {
     const getAnswers = async () => {
       try{
-        const res = await axios.get(BASE_URL + `/api/answers/${questionId}`)
+        const res = await axios.get(BASE_URL + `/api/answers/${questionId}`,{
+          headers: {Authorization: `bearer ${token}`}
+        })
+
+        console.log(res);
+        setAnswers(res.data.answers);
+
       }
       catch(err){
-  
+        console.log(err);
       }
     }
 
     getAnswers();
-  },[answers])
+  },[])
 
 
   const handlePostAnswer = async (e) => {
@@ -111,16 +112,13 @@ function QuestionDetailsPage() {
       setAnswerError(null);
 
       try {
-        // --- Replace with your API Call ---
         const response = await axios.post(`${BASE_URL}/api/answers/${questionId}`,
            { content: newAnswerBody },
            { headers: { Authorization: `bearer ${token}` } }
         );
-        // --- End API Call ---
 
-        // Add the new answer to the list instantly (Optimistic UI or refetch)
-        setAnswers([response.data.answer, ...answers]); // Prepend new answer (adjust based on response)
-        setNewAnswerBody(''); // Clear the editor
+        setAnswers([response.data.answer, ...answers]);
+        setNewAnswerBody('');
 
       } catch(err) {
          console.error("Error posting answer:", err);
@@ -179,11 +177,9 @@ function QuestionDetailsPage() {
     } finally {
         setIsDeleting(false);
     }
-};
+  };
 
 
-
-  if (loading) return <div className="p-6 mt-40 text-center"> <Loading/> </div>;
   if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
   if (!question) return <div className="p-6 text-center">Question not found.</div>;
 
@@ -285,7 +281,14 @@ function QuestionDetailsPage() {
           {answers.length > 0 ? (
               <div className="space-y-6">
                   {answers.map((answer) => (
-                      <AnswerItem key={answer._id} answer={answer} />
+                      <AnswerItem 
+                        key={answer._id} 
+                        answer={answer} 
+                        questionId={questionId}
+                        loggedInUser={loggedInUser}
+                        token={token}
+                        onAnswerDeleted={"handleAnswerDeleted"}
+                      />
                   ))}
               </div>
           ) : (

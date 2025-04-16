@@ -4,6 +4,36 @@ const commentModel = require("../models/comment.model");
 const questionModel = require("../models/question.model");
 const userModel = require("../models/user.model");
 
+const getAnswersController = async function(req,res){
+    try{
+        const questionId = req.params?.questionId;
+        if(!questionId){
+            return res.status(400).json({
+                message: "Question id is required"
+            })
+        }
+
+        const question = await questionModel.findById(questionId);
+        if(!question){
+            return res.status(404).json({
+                message: "Question not found"
+            })
+        }
+
+        const answers = await answerModel.find({ questionId }).populate("authorId","username avatar");
+
+        res.status(200).json({
+            message: "Answers fetched successfully",
+            answers
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
 
 const addAnswerController = async function(req,res){
     try{
@@ -43,6 +73,8 @@ const addAnswerController = async function(req,res){
             content
         })
 
+        const populatedAnswer = await answer.populate('authorId', 'username avatar');
+
         const user = await userModel.findById(userId);
         user.answerGivenCount++;
         await user.save();
@@ -52,7 +84,7 @@ const addAnswerController = async function(req,res){
 
         res.status(201).json({
             message: "answer created successfully",
-            answer
+            answer: populatedAnswer
         })
 
     }
@@ -296,6 +328,7 @@ const downVoteAnswerController = async function(req,res){
 
 
 module.exports = {
+    getAnswersController,
     addAnswerController,
     editAnswerController,
     deleteAnswerController,

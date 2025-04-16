@@ -141,7 +141,6 @@ const updateController = async function(req,res){
     }
 }
 
-
 const deleteController = async function(req,res){
     try{
         const id = req.params.id;
@@ -161,15 +160,18 @@ const deleteController = async function(req,res){
             return res.status(404).json({ message: "Question not found" });
         }
 
-        if (isQuestionExist?.authorId?.toString() !== userId) {
+        if (isQuestionExist?.authorId?.toString() !== userId.toString()) {
             return res.status(403).json({ message: "Unauthorized to modify this question" });
         }
 
-        const question = await questionModel.findByIdAndDelete(id);
+        await questionModel.findByIdAndDelete(id);
+
+        const user = await userModel.findById(userId);
+        user.questionsAskedCount--;
+        await user.save();
 
         res.status(200).json({
             message: "Question is deleted",
-            question
         })
 
     }
