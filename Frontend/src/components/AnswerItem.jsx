@@ -65,9 +65,18 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
   const [editedContent, setEditedContent] = useState(initialContent); 
   const [currentContent, setCurrentContent] = useState(initialContent);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // --- Comments State (Placeholders for now) ---
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [isPostingComment, setIsPostingComment] = useState(false);
+  
 
   useEffect(() => {
       if (loggedInUser) {
@@ -148,6 +157,57 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
     }
   }, [loggedInUser, token, answerId, isVoting, currentVotes, userVote]);
 
+  const handleEditClick = () => {
+    setEditedContent(currentContent);
+    setIsEditing(true);
+    setEditError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedContent(currentContent);
+    setEditError(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (isSavingEdit) return;
+    if (!editedContent?.trim()) {
+        setEditError("Answer content cannot be empty.");
+        return;
+    }
+    if (editedContent === currentContent) {
+        setIsEditing(false);
+        setEditError(null);
+        return;
+    }
+
+    setIsSavingEdit(true);
+    setEditError(null);
+
+    try {
+        const response = await axios.put(`${BASE_URL}/api/answers/${answerId}`,
+            { content: editedContent },
+            { headers: { Authorization: `bearer ${token}` } }
+        );
+
+        const updatedAnswer = response.data?.answer;
+
+        if (updatedAnswer) {
+            setCurrentContent(updatedAnswer.content);
+            setEditedContent(updatedAnswer.content);
+
+            setIsEditing(false);
+            toast.success("Answer updated successfully!");
+        }
+
+    } catch (err) {
+        console.error("Error updating answer:", err);
+        setEditError(err.response?.data?.message || "Failed to save changes.");
+        toast.error("Failed to update answer.");
+    } finally {
+        setIsSavingEdit(false);
+    }
+  };
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -210,39 +270,117 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
 
       {/* Answer Content Section */}
       <div className="flex-grow min-w-0">
-         <div className="prose prose-sm sm:prose dark:prose-invert max-w-none mb-4">
-             <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
-               {currentContent}
-             </ReactMarkdown>
-          </div>
+      <div className="flex-grow min-w-0">
+         {/* --- Conditional Rendering: Edit Mode vs View Mode --- */}
+         {isEditing ? (
+            <div className='space-y-3'>
+                {/* Display Edit Error */}
+                {editError && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm" role="alert">
+                       {editError}
+                    </div>
+                )}
+                {/* Markdown Editor for Editing */}
+                <div data-color-mode={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}>
+                    <MDEditor
+                        value={editedContent}
+                        onChange={setEditedContent}
+                        height={200} // Smaller height for editing maybe
+                        preview="live"
+                    />
+                </div>
+                {/* Save/Cancel Buttons */}
+                <div className="flex items-center space-x-3 mt-2">
+                     <button
+                        onClick={handleSaveEdit}
+                        disabled={isSavingEdit || editedContent === currentContent} // Disable if no change or saving
+                        className="inline-flex items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                     >
+                        {isSavingEdit ? 'Saving...' : 'Save Edits'}
+                     </button>
+                     <button
+                        onClick={handleCancelEdit}
+                        disabled={isSavingEdit}
+                        className="inline-flex items-center px-4 py-1.5 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                     >
+                        Cancel
+                     </button>
+                 </div>
+            </div>
+         ) : (
+            // View Mode: Render Markdown
+             <div className="prose prose-sm sm:prose dark:prose-invert max-w-none mb-4">
+                 <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
+                   {currentContent}
+                 </ReactMarkdown>
+              </div>
+         )}
+         {/* --- End Conditional Rendering --- */}
 
-        {/* Author Info & Actions */}
-        <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2 mt-4">
-           {/* Edit/Delete/Comment Buttons */}
-           <div className="text-xs space-x-3 flex items-center text-gray-500 dark:text-gray-400">
-              {isOwner && (
-                 <>
-                  <button className="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
-                    <EditIcon /> <span className="ml-1">Edit</span>
-                  </button>
-                  <button onClick={handleDeleteClick} className="flex items-center hover:text-red-600 dark:hover:text-red-400">
-                    <TrashIcon /> <span className="ml-1">Delete</span>
-                  </button>
-                 </>
-              )}
-              {/* Add Share/Comment buttons later */}
-              <button className="hover:text-gray-700 dark:hover:text-gray-300">Comment</button>
-           </div>
 
-           {/* Author Card */}
-           <div className="flex-shrink-0 bg-blue-50 dark:bg-gray-700 p-2 rounded-md text-xs text-gray-600 dark:text-gray-300 shadow-sm"> {/* Added shadow */}
-             <p className="mb-1 text-gray-500 dark:text-gray-400">answered {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'recently'}</p>
-             <Link to={`/profile/${author?._id}`} className="flex items-center space-x-1.5 group">
-                <img className='w-8 h-8 rounded-full object-cover' src={author?.avatar} alt="author_name" />
-                <span className="font-medium text-blue-700 dark:text-blue-400 group-hover:underline">{author?.username}</span>
-             </Link>
-           </div>
-        </div>
+        {/* Author Info & Actions (Only show when not editing) */}
+        {!isEditing && (
+             <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2 mt-4">
+               {/* Edit/Delete/Comment Buttons */}
+               <div className="text-xs space-x-3 flex items-center text-gray-500 dark:text-gray-400">
+                  {isOwner && (
+                     <>
+                      {/* Updated Edit button to call handler */}
+                      <button onClick={handleEditClick} className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <EditIcon /> <span className="ml-1">Edit</span>
+                      </button>
+                      <button onClick={handleDeleteClick} className="flex items-center hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        <TrashIcon /> <span className="ml-1">Delete</span>
+                      </button>
+                     </>
+                  )}
+                   {/* Updated Comment button to toggle state */}
+                   <button onClick={handleToggleComments} className="flex items-center hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                       <CommentIcon /> <span className="ml-1">Comment ({/* TODO: Add comment count */ 0})</span>
+                   </button>
+               </div>
+
+               {/* Author Card */}
+               <div className="flex-shrink-0 bg-blue-50 dark:bg-gray-700 p-2 rounded-md text-xs ... shadow-sm">
+                 {/* ... Author details ... */}
+                 <p className="mb-1 ...">answered {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'recently'}</p>
+                 <Link to={`/profile/${author?._id}`} className="flex items-center ... group">
+                    <img className='w-8 h-8 rounded-full ...' src={author?.avatar} alt="author_name" />
+                    <span className="font-medium ... group-hover:underline">{author?.username}</span>
+                 </Link>
+               </div>
+             </div>
+        )}
+
+         {/* --- Comments Section (Render conditionally) --- */}
+         {showComments && !isEditing && (
+             <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Comments</h4>
+                 {/* TODO: Render comments list */}
+                  <div className="text-center text-xs text-gray-400 italic py-2">(Comment List Placeholder)</div>
+
+                 {/* Add Comment Form (Only for logged-in users) */}
+                  {loggedInUser && (
+                      <form onSubmit={handlePostComment} className="flex items-start space-x-2">
+                          <img className="h-6 w-6 rounded-full object-cover flex-shrink-0" src={loggedInUser.avatarUrl || `https://ui-avatars.com/api/?name=${loggedInUser.name}&size=24&background=random`} alt="Your avatar" />
+                          <input
+                             type="text"
+                             value={newComment}
+                             onChange={(e) => setNewComment(e.target.value)}
+                             placeholder="Add a comment..."
+                             className="flex-grow block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                          <button
+                             type="submit"
+                             disabled={!newComment.trim() || isPostingComment}
+                             className="px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-400 disabled:opacity-60"
+                          >
+                             {isPostingComment ? '...' : 'Add'}
+                          </button>
+                      </form>
+                  )}
+             </div>
+         )}
       </div>
 
       <ConfirmationModal
