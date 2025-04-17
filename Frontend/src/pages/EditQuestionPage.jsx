@@ -8,7 +8,7 @@ import { BASE_URL } from '../utils/constants';
 
 function EditQuestionPage() {
 
-    const {id: questionId} = useParams();
+  const {id: questionId} = useParams();
   const navigate = useNavigate();
   const { token, user: loggedInUser } = useSelector(state => state.user);
   
@@ -18,12 +18,10 @@ function EditQuestionPage() {
   const [tags, setTags] = useState('');
 
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);  
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchQuestionData = async () => {
-      setLoading(true);
       setError(null);
       try {
         const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`, {headers: {Authorization: `bearer ${token}`}});
@@ -39,8 +37,6 @@ function EditQuestionPage() {
       } catch (err) {
         console.error("Error fetching question data for edit:", err);
         setError(err.message || "Failed to load question data.");
-      } finally {
-        setLoading(false);
       }
     };
   
@@ -49,12 +45,10 @@ function EditQuestionPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     if (!title.trim() || !body.trim() || !tags.trim()) {
       setError('Please fill in all fields: Title, Body, and Tags.');
-      setLoading(false);
       return;
     }
 
@@ -62,13 +56,11 @@ function EditQuestionPage() {
 
     if (processedTags.length === 0) {
         setError('Please enter at least one valid tag.');
-        setLoading(false);
         return;
     }
 
     if (processedTags.length > 5) {
         setError('You can add a maximum of 5 tags.');
-        setLoading(false);
         return;
     }
 
@@ -90,8 +82,6 @@ function EditQuestionPage() {
     } catch (err) {
       console.error("Error posting question:", err);
       setError(err.response?.data?.message || 'Failed to post question. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -186,19 +176,6 @@ function EditQuestionPage() {
         </form>
       </div>
 
-
-       {/* <aside className="lg:w-1/4 flex-shrink-0">
-           <div className="sticky top-20 bg-blue-50 dark:bg-gray-800/50 border border-blue-200 dark:border-gray-700 p-4 rounded-lg shadow-sm">
-               <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-3">How to Ask a Good Question</h3>
-               <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
-                   <li>Summarize the problem in the title.</li>
-                   <li>Describe the specific issue in the body.</li>
-                   <li>Include relevant code snippets (use Markdown!).</li>
-                   <li>Explain what you've already tried.</li>
-                   <li>Use descriptive tags.</li>
-               </ul>
-           </div>
-       </aside> */}
     </div>
   );
 }

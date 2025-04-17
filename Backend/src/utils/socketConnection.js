@@ -138,7 +138,7 @@ const socketConnection = (server) => {
             const options = {
                 method: 'POST',
                 url: `https://${JUDGE0_API_HOST}/submissions`,
-                params: { base64_encoded: 'false', wait: 'true', fields: '*' }, // wait=true to wait for result, fields=* for all details
+                params: { base64_encoded: 'false', wait: 'true', fields: '*' },
                 headers: {
                     'content-type': 'application/json',
                     'X-RapidAPI-Key': JUDGE0_API_KEY,
@@ -154,15 +154,13 @@ const socketConnection = (server) => {
             try {
                 const response = await axios.request(options);
                 console.log('[Run Code] Judge0 Response:', response.data);
-                // Send result back ONLY to the user who initiated the run
-                socket.emit('codeOutput', response.data); // Pass the whole result object
+                socket.emit('codeOutput', response.data);
         
             } catch (error) {
                 console.error('[Run Code] Judge0 API Error:', error.response?.data || error.message);
-                 // Send error details back to the user
                  socket.emit('codeOutput', {
                      stderr: error.response?.data?.message || error.message || 'Failed to execute code via external service.',
-                     status: { description: 'API Error' } // Provide some status
+                     status: { description: 'API Error' }
                  });
             }
 
