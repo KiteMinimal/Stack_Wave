@@ -39,7 +39,7 @@ const createComment = async function(req,res){
         const userId = req.user?._id;
         const { content } = req.body;
 
-        if(!content && !content.trim()){
+        if(!content || !content.trim()){
             return res.status(400).json({
                 message: "content is required"
             })
@@ -49,6 +49,12 @@ const createComment = async function(req,res){
             return res.status(400).json({
                 message: "content length is less than 200 characters"
             })
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(answerId)) {
+            return res.status(400).json({ 
+                message: "Invalid Answer ID format" 
+            });
         }
 
         const isAnswerExist = await answerModel.findById(answerId);
@@ -123,7 +129,6 @@ const updateComment = async function(req,res){
     }
 }
 
-
 const deleteComment = async function(req,res){
     try{
         const commentId = req.params?.commentId;
@@ -167,6 +172,56 @@ const deleteComment = async function(req,res){
 
 const createReply = async function(req,res){
     try{
+        const { commentId: parentCommentId } = req.params;
+        const userId = req.user._id;
+
+        const { content } = req.body;
+
+        if(!content || !content.trim()){
+            return res.status(400).json({
+                message: "Content is required"
+            })
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(parentCommentId)) {
+            return res.status(400).json({ 
+                message: "Invalid Parent Comment ID format" 
+            });
+        }
+
+        const parentComment = await answerModel.findById(parentCommentId);
+        if(!parentComment){
+            return res.status(404).json({
+                message: "Cannot reply to a comment that does not exist"
+            })
+        }
+
+        const answerId = parentComment?.answerId;
+
+        const comment = await commentModel.create({
+            content,
+            authorId: userId,
+            answerId,
+            parentComment: parentCommentId
+        })
+
+        const populatedReply = await commentModel.findById(comment._id).populate('authorId', 'username avatar');
+
+        res.status(201).json({
+            message: "reply added",
+            comment: populatedReply
+        })
+
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const getReply = async function(req,res){
+    try{
 
     }
     catch(err){
@@ -181,5 +236,7 @@ module.exports = {
     getAllComments,
     createComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    createReply,
+    getReply
 }
