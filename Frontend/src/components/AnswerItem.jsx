@@ -10,6 +10,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { BASE_URL } from '../utils/constants';
 import ConfirmationModal from './ConfirmationModal';
+import MDEditor from '@uiw/react-md-editor';
 
 
 
@@ -25,6 +26,7 @@ const DownVoteIcon = ({ filled }) => (
 );
 
 const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>;
+const CommentIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443h2.882c1.684 0 3.032-1.349 3.032-3.032V6.332c0-1.684-1.348-3.032-3.032-3.032H6.332c-1.684 0-3.032 1.348-3.032 3.032v6.428z" /></svg>;
 const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>;
 
 const MarkdownComponents = {
@@ -76,7 +78,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isPostingComment, setIsPostingComment] = useState(false);
-  
+
 
   useEffect(() => {
       if (loggedInUser) {
@@ -209,6 +211,24 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
     }
   };
 
+  const handleToggleComments = () => {
+    setShowComments(!showComments);
+    // TODO: Fetch comments if showComments becomes true and comments haven't been fetched yet
+    if (!showComments && comments.length === 0) {
+        console.log("Need to fetch comments for answer:", answerId);
+        // fetchComments(answerId);
+    }
+  };
+
+  const handlePostComment = (e) => {
+      e.preventDefault();
+      if (!newComment.trim()) return;
+      console.log("Posting comment:", newComment);
+      // TODO: Implement API call to post comment
+      // POST /api/answers/:answerId/comments
+      // setNewComment('');
+  };
+
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
   };
@@ -270,22 +290,21 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
 
       {/* Answer Content Section */}
       <div className="flex-grow min-w-0">
-      <div className="flex-grow min-w-0">
          {/* --- Conditional Rendering: Edit Mode vs View Mode --- */}
          {isEditing ? (
             <div className='space-y-3'>
                 {/* Display Edit Error */}
                 {editError && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm" role="alert">
-                       {editError}
-                    </div>
+                <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm" role="alert">
+                  {editError}
+                </div>
                 )}
                 {/* Markdown Editor for Editing */}
                 <div data-color-mode={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}>
                     <MDEditor
                         value={editedContent}
                         onChange={setEditedContent}
-                        height={200} // Smaller height for editing maybe
+                        height={200}
                         preview="live"
                     />
                 </div>
@@ -308,14 +327,12 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
                  </div>
             </div>
          ) : (
-            // View Mode: Render Markdown
              <div className="prose prose-sm sm:prose dark:prose-invert max-w-none mb-4">
                  <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
                    {currentContent}
                  </ReactMarkdown>
               </div>
          )}
-         {/* --- End Conditional Rendering --- */}
 
 
         {/* Author Info & Actions (Only show when not editing) */}
@@ -344,8 +361,8 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
                <div className="flex-shrink-0 bg-blue-50 dark:bg-gray-700 p-2 rounded-md text-xs ... shadow-sm">
                  {/* ... Author details ... */}
                  <p className="mb-1 ...">answered {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : 'recently'}</p>
-                 <Link to={`/profile/${author?._id}`} className="flex items-center ... group">
-                    <img className='w-8 h-8 rounded-full ...' src={author?.avatar} alt="author_name" />
+                 <Link to={`/profile/${author?._id}`} className="flex items-center gap-2 group">
+                    <img className='w-8 h-8 rounded-full object-cover' src={author?.avatar} alt="author_name" />
                     <span className="font-medium ... group-hover:underline">{author?.username}</span>
                  </Link>
                </div>
@@ -396,7 +413,6 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
        />
 
     </div>
-  );
-}
+  )};
 
-export default AnswerItem;
+export default AnswerItem 

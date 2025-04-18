@@ -18,6 +18,10 @@ const answerSchema = new mongoose.Schema({
         ref: "User",
         required: [true, "authorId is required"],
     },
+    commentCount: {
+        type: Number,
+        default: 0
+    },
     vote: {
         type: Number,
         default: 0
