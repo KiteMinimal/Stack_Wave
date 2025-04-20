@@ -83,6 +83,7 @@ function App() {
               <Route path="/question/:id/edit" element={<EditQuestionPage/>} />
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
               <Route path="/room/:roomId" element={<RoomPage/>} />
+              <Route path="/profile:id" />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>

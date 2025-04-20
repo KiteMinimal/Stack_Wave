@@ -11,6 +11,8 @@ import ConfirmationModal from "./ConfirmationModal";
 import MDEditor from "@uiw/react-md-editor";
 import CommentItem from "./CommentItem";
 import { BASE_URL } from "../utils/constants";
+import deleteComments from "../utils/deleteComment";
+
 
 const UpVoteIcon = ({ filled }) => (
   <svg
@@ -370,18 +372,6 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
     }
   };
 
-  const handleCommentDeleted = (deletedCommentId) => {
-    // TODO: Need logic to remove comment/reply from state recursively
-    // For now, just refetch all comments
-    fetchComments();
-  };
-
-  const handleCommentUpdated = (updatedComment) => {
-    // TODO: Need logic to update comment/reply in state recursively
-    // For now, just refetch all comments
-    fetchComments();
-  };
-
   const handleTriggerReply = (commentId, username) => {
     setReplyingTo({ commentId, username });
     // Focus the input field?
@@ -586,7 +576,14 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
               </p>
             )}
 
-            {comments.map(comment => <CommentItem key={comment._id} comment={comment} token={token} isOwner={isOwner} />)}
+            {comments.map(comment => <CommentItem 
+              key={comment._id} 
+              comment={comment} 
+              token={token} 
+              onCommentDeleted={(commentId) => deleteComments(commentId,setComments)}
+              onReply={(commentId, username) => handleTriggerReply(commentId, username)}
+              loggedInUser={loggedInUser}
+            />)}
 
             {/* Add Comment Form (Only for logged-in users) */}
             {loggedInUser && (

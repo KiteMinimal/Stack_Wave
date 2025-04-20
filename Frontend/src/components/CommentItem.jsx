@@ -1,5 +1,4 @@
 
-// src/components/comments/CommentItem.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -19,18 +18,16 @@ const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" view
 const ReplyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-0.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>;
 
 
-// Simple Markdown components for comments (optional)
 const SimpleMarkdownComponents = {
-   p: ({node, ...props}) => <p className="my-1" {...props} />, // Reduce paragraph margins
+   p: ({node, ...props}) => <p className="my-1" {...props} />,
    a: ({node, ...props}) => <a className="text-indigo-500 hover:underline" {...props} />,
    code: ({node, inline, className, children, ...props}) => <code className={`text-xs bg-gray-100 dark:bg-gray-700 rounded px-1 py-0.5 ${className || ''}`} {...props}>{children}</code>,
-   // Disable larger elements if needed for comments
    h1: 'p', h2: 'p', h3: 'p', h4: 'p', h5: 'p', h6: 'p',
-   img: () => null, // Disable images in comments?
+   img: () => null,
 };
 
 
-function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,onReply,level = 0 }) {
+function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level = 0 }) {
 
     const { content: initialContent, authorId: author , createdAt, _id: commentId, parentComment } = comment;
 
@@ -44,18 +41,28 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
     const [isDeleting, setIsDeleting] = useState(false);
 
     // --- Edit Handlers ---
-    const handleEditClick = () => { setIsEditing(true); setEditedContent(currentContent); setEditError(null); };
+    const handleEditClick = () => { 
+        setIsEditing(true); 
+        setEditedContent(currentContent); 
+        setEditError(null); 
+    };
 
-    const handleCancelEdit = () => { setIsEditing(false); setEditedContent(currentContent); setEditError(null); };
+    const handleCancelEdit = () => { 
+        setIsEditing(false); 
+        setEditedContent(currentContent); 
+        setEditError(null); 
+    };
 
     const handleSaveEdit = async () => {
         if (isSavingEdit || !editedContent?.trim() || editedContent === currentContent) {
-            if(editedContent === currentContent) setIsEditing(false); // Close if no change
+            if(editedContent === currentContent) setIsEditing(false);
             return;
         }
-        setIsSavingEdit(true); setEditError(null);
+        setIsSavingEdit(true); 
+        setEditError(null);
+
         try {
-            const response = await axios.put(`${BASE_URL}/api/comments/${commentId}`, // New endpoint for editing comments
+            const response = await axios.put(`${BASE_URL}/api/comments/${commentId}`,
                { content: editedContent },
                { headers: { Authorization: `bearer ${token}` } }
             );
@@ -63,9 +70,8 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
             if (updatedComment) {
                 setCurrentContent(updatedComment.content);
                 setEditedContent(updatedComment.content);
-                if (onCommentUpdated) onCommentUpdated(updatedComment); // Notify parent
             } else {
-                setCurrentContent(editedContent); // Fallback
+                setCurrentContent(editedContent);
             }
             setIsEditing(false);
             toast.success("Comment updated");
@@ -87,16 +93,16 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
         if (isDeleting) return;
         setIsDeleting(true);
         try {
-            await axios.delete(`${BASE_URL}/api/comments/${commentId}`, { // New endpoint for deleting comments
+            await axios.delete(`${BASE_URL}/api/comments/${commentId}`, {
                 headers: { Authorization: `bearer ${token}` }
             });
             setShowDeleteModal(false);
-            if (onCommentDeleted) onCommentDeleted(commentId); // Notify parent
+            if (onCommentDeleted) onCommentDeleted(commentId);
             toast.success("Comment deleted");
         } catch (err) {
             console.error("Error deleting comment:", err);
             toast.error(err.response?.data?.message || "Failed to delete comment.");
-            setShowDeleteModal(false); // Close modal even on error
+            setShowDeleteModal(false);
         } finally {
             setIsDeleting(false);
         }
@@ -105,13 +111,14 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
     // --- Reply Handler ---
     const handleReplyClick = () => {
         if (onReply) {
-            onReply(commentId, author.username); // Pass comment ID and author name to trigger reply form
+            onReply(commentId, author.username);
         }
     };
 
+    const isOwner = loggedInUser && author && loggedInUser._id === author._id;
 
     return (
-        <div className={`flex space-x-2 text-xs ${level > 0 ? `ml-${level * 4}` : ''}`}> {/* Indentation for replies */}
+        <div className={`flex space-x-2 text-xs ${level > 0 ? `ml-${level * 4}` : ''}`}>
             {/* Avatar */}
             <Link to={`/profile/${author?._id}`} className="flex-shrink-0 mt-1">
                 <img
@@ -124,7 +131,6 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
             {/* Comment Body & Actions */}
             <div className="flex-grow">
                 {isEditing ? (
-                    // Edit Mode
                     <div className="space-y-2">
                         {editError && <p className="text-red-500 text-xs">{editError}</p>}
                         <MDEditor
@@ -132,10 +138,10 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
                             onChange={setEditedContent}
                             height={100}
                             preview="edit"
-                            hideToolbar={true} // Simpler editor for comments
+                            hideToolbar={true}
                             textareaProps={{ placeholder: "Edit your comment..." }}
                             visibleDragbar={false}
-                            className="text-xs" // Smaller font for editor
+                            className="text-xs"
                         />
                          <div className="flex items-center space-x-2">
                              <button onClick={handleSaveEdit} disabled={isSavingEdit} className="px-2 py-0.5 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50">Save</button>
@@ -157,7 +163,7 @@ function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,o
                         </div>
                          {/* Actions: Reply, Edit, Delete, Time */}
                          <div className="flex items-center space-x-3 mt-1 px-1 text-gray-500 dark:text-gray-400">
-                            <button onClick={handleReplyClick} className="hover:underline inline-flex items-center"> <ReplyIcon /> Reply</button>
+                            <button onClick={handleReplyClick} className="hover:underline inline-flex items-center"> <ReplyIcon /> Reply </button>
                              {isOwner && (
                                  <>
                                      <button onClick={handleEditClick} className="hover:underline">Edit</button>
