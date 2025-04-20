@@ -30,9 +30,9 @@ const SimpleMarkdownComponents = {
 };
 
 
-function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onCommentUpdated,onReply,level = 0 }) {
+function CommentItem({ comment,isOwner,token,onCommentDeleted,onCommentUpdated,onReply,level = 0 }) {
 
-    const { content: initialContent, author, createdAt, _id: commentId, parentComment } = comment;
+    const { content: initialContent, authorId: author , createdAt, _id: commentId, parentComment } = comment;
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -42,8 +42,6 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onCommentUpda
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    const isOwner = loggedInUser && author && loggedInUser._id === author._id;
 
     // --- Edit Handlers ---
     const handleEditClick = () => { setIsEditing(true); setEditedContent(currentContent); setEditError(null); };
@@ -133,7 +131,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onCommentUpda
                             value={editedContent}
                             onChange={setEditedContent}
                             height={100}
-                            preview="edit" // Only show editor in edit mode maybe
+                            preview="edit"
                             hideToolbar={true} // Simpler editor for comments
                             textareaProps={{ placeholder: "Edit your comment..." }}
                             visibleDragbar={false}
@@ -159,7 +157,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onCommentUpda
                         </div>
                          {/* Actions: Reply, Edit, Delete, Time */}
                          <div className="flex items-center space-x-3 mt-1 px-1 text-gray-500 dark:text-gray-400">
-                            {loggedInUser && <button onClick={handleReplyClick} className="hover:underline inline-flex items-center"><ReplyIcon /> Reply</button>}
+                            <button onClick={handleReplyClick} className="hover:underline inline-flex items-center"> <ReplyIcon /> Reply</button>
                              {isOwner && (
                                  <>
                                      <button onClick={handleEditClick} className="hover:underline">Edit</button>

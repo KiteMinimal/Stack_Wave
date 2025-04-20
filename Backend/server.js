@@ -4,10 +4,11 @@ const { createServer } = require("http")
 const config = require("./src/config/config");
 const app = require("./src/app");
 
-const connect = require("./src/db/db");
-const socketConnection = require("./src/utils/socketConnection");
-connect();
 require("./src/utils/redisConnection");
+const connect = require("./src/db/db");
+connect();
+
+const socketConnection = require("./src/utils/socketConnection");
 
 const httpServer = createServer(app);
 socketConnection(httpServer);

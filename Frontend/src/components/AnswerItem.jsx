@@ -9,7 +9,6 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ConfirmationModal from "./ConfirmationModal";
 import MDEditor from "@uiw/react-md-editor";
-import fetchComments from "../utils/fetchComments";
 import CommentItem from "./CommentItem";
 import { BASE_URL } from "../utils/constants";
 
@@ -531,15 +530,13 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
                   </button>
                 </>
               )}
-              {/* Updated Comment button to toggle state */}
               <button
                 onClick={handleToggleComments}
                 className="flex items-center hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <CommentIcon />
                 <span className="ml-1">
-                  {showComments ? "Hide" : "Show"} Comments{" "}
-                  {/* Placeholder count */} (0)
+                  {showComments ? "Hide" : "Show"} Comments{" "} ({commentCount})
                 </span>
               </button>
             </div>
@@ -589,7 +586,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
               </p>
             )}
 
-            {comments.map(comment => <CommentItem key={comment._id} comment={comment} token={token} />)}
+            {comments.map(comment => <CommentItem key={comment._id} comment={comment} token={token} isOwner={isOwner} />)}
 
             {/* Add Comment Form (Only for logged-in users) */}
             {loggedInUser && (
