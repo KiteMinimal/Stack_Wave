@@ -5,7 +5,8 @@ const commentSchema = new mongoose.Schema({
     answerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Answer",
-        required: [true,"answerId is required"]
+        required: [true,"answerId is required"],
+        index: true
     },
     content: {
         type: String,

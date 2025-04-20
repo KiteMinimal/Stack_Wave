@@ -1,4 +1,5 @@
 
+const { default: mongoose } = require("mongoose");
 const answerModel = require("../models/answer.model");
 const commentModel = require("../models/comment.model");
 
@@ -69,6 +70,9 @@ const createComment = async function(req,res){
             authorId: userId,
             content
         })
+
+        isAnswerExist.commentCount++;
+        isAnswerExist.save();
 
         const populatedComment = await commentModel.findById(comment._id).populate("authorId",'username avatar');
 
