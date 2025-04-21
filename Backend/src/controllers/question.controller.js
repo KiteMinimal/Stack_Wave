@@ -2,6 +2,8 @@
 const mongoose = require("mongoose");
 const questionModel = require("../models/question.model");
 const userModel = require("../models/user.model");
+const answerModel = require("../models/answer.model");
+const commentModel = require("../models/comment.model");
 
 
 const allQuestionsController = async function(req,res){
@@ -165,6 +167,8 @@ const deleteController = async function(req,res){
         }
 
         await questionModel.findByIdAndDelete(id);
+        const answer = await answerModel.deleteMany({ questionId: id });
+        await commentModel.deleteMany({ answerId: answer._id });
 
         const user = await userModel.findById(userId);
         user.questionsAskedCount--;

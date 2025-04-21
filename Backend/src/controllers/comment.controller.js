@@ -160,6 +160,9 @@ const deleteComment = async function(req,res){
         }
 
         await commentModel.deleteMany({ parentComment: commentId });
+        const answer = await answerModel.findById(comment?.answerId);
+        answer.commentCount--;
+        await answer.save();
 
         res.status(200).json({
             message: "Comment deleted",

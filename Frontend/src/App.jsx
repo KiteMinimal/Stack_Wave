@@ -19,6 +19,7 @@ import { BASE_URL } from "./utils/constants";
 import { addUser } from "./store/userSlice";
 import RoomPage from "./pages/RoomPage";
 import EditQuestionPage from "./pages/EditQuestionPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
 
@@ -83,7 +84,7 @@ function App() {
               <Route path="/question/:id/edit" element={<EditQuestionPage/>} />
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
               <Route path="/room/:roomId" element={<RoomPage/>} />
-              <Route path="/profile:id" />
+              <Route path="/profile/:id" element={<ProfilePage/>} />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>
