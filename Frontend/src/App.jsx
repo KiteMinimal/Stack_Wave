@@ -20,6 +20,7 @@ import { addUser } from "./store/userSlice";
 import RoomPage from "./pages/RoomPage";
 import EditQuestionPage from "./pages/EditQuestionPage";
 import ProfilePage from "./pages/ProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
 
 function App() {
 
@@ -85,7 +86,7 @@ function App() {
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
               <Route path="/room/:roomId" element={<RoomPage/>} />
               <Route path="/profile/:userId" element={<ProfilePage/>} />
-              <Route path="/profile/:userId/edit" element={<ProfilePage/>} />
+              <Route path="/profile/:userId/edit" element={<EditProfilePage/> } />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>
