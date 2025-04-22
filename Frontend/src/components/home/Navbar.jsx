@@ -70,16 +70,16 @@ const Navbar = () => {
             className={`hidden bg-transparent md:block input input-bordered w-28 md:w-96 dark:border dark:border-white`}
           />
 
-            <div className={`dropdown dropdown-end dark:bg-gray-700 dark:text-white""`}>
+            <div className={`dropdown dropdown-end dark:text-white""`}>
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
-                  <img alt="Tailwind CSS Navbar component" src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}&size=20&background=random`} />
+                <div className="w-10 rounded-full dark:bg-gray-700">
+                  <img alt="profile photo" src={user.avatar} />
                 </div>
               </div>
 
               <ul tabIndex={0} className={`menu menu-sm dropdown-content dark:bg-black "bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow`}>
                 <li>
-                  <Link to="/me" className="justify-between">
+                  <Link to={`/profile/${user._id}`} className="justify-between">
                     Profile
                     <span className="badge">New</span>
                   </Link>

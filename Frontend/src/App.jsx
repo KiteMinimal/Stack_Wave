@@ -84,7 +84,8 @@ function App() {
               <Route path="/question/:id/edit" element={<EditQuestionPage/>} />
               <Route path="/rooms" element={ <CreateRoomsPage/>} />
               <Route path="/room/:roomId" element={<RoomPage/>} />
-              <Route path="/profile/:id" element={<ProfilePage/>} />
+              <Route path="/profile/:userId" element={<ProfilePage/>} />
+              <Route path="/profile/:userId/edit" element={<ProfilePage/>} />
             </Route>
           <Route path="*" element={<PageNotFound/>} />
           </Routes>

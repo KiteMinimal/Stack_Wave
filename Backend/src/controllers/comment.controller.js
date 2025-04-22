@@ -196,7 +196,7 @@ const createReply = async function(req,res){
             });
         }
 
-        const parentComment = await answerModel.findById(parentCommentId);
+        const parentComment = await commentModel.findById(parentCommentId);
         if(!parentComment){
             return res.status(404).json({
                 message: "Cannot reply to a comment that does not exist"

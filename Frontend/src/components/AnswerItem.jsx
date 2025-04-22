@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
@@ -153,12 +153,13 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
 
   // --- Comments State (Placeholders for now) ---
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState([]); // Holds top-level comments for this answer
+  const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [commentError, setCommentError] = useState(null);
-  const [newComment, setNewComment] = useState(""); // For the top-level comment input
+  const [newComment, setNewComment] = useState("");
   const [isPostingComment, setIsPostingComment] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const inputRef = useRef(null);
 
 
   useEffect(() => {
@@ -344,10 +345,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
       ? `${BASE_URL}/api/comments/${replyingTo.commentId}/replies`
       : `${BASE_URL}/api/comments/${answerId}`;
 
-    // The payload might be slightly different if using Option 1 endpoint
     const payload = { content };
-    // If using Option 1 endpoint for replies:
-    // if (isReply) payload.parentCommentId = replyingTo.commentId;
 
     try {
       const response = await axios.post(url, payload, {
@@ -374,8 +372,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
 
   const handleTriggerReply = (commentId, username) => {
     setReplyingTo({ commentId, username });
-    // Focus the input field?
-    // inputRef.current?.focus(); // Need an inputRef on the comment input
+    inputRef.current?.focus();
   };
 
   const handleDeleteClick = () => {
@@ -599,10 +596,11 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
                 <input
                   type="text"
                   value={newComment}
+                  ref={inputRef}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
                   className="flex-grow block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  aria-label="Add a comment" // Added aria-label
+                  aria-label="Add a comment"
                 />
                 <button
                   type="submit"

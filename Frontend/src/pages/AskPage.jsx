@@ -59,7 +59,7 @@ function AskPage() {
 
     } catch (err) {
       console.error("Error posting question:", err);
-      setError(err.response?.data?.message || 'Failed to post question. Please try again.');
+      setError(err.response?.data?.message[0] || 'Failed to post question. Please try again.');
     } finally {
       setLoading(false);
     }
