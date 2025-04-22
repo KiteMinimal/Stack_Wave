@@ -2,6 +2,8 @@
 const userModel = require("../models/user.model");
 const {validationResult,body} = require("express-validator")
 const redis = require("../utils/redisConnection");
+const imagekit = require("../utils/imagekit");
+const { default: mongoose } = require("mongoose");
 
 const userAuth = async function(req,res,next){
     try{
@@ -82,8 +84,29 @@ const loginValidation = [
     }
 ]
 
+const imageUpload = async(req,res,next) => {
+
+    try{
+        if(req.file){
+            const result = await imagekit.upload({
+                file: req.file.buffer,
+                fileName: new mongoose.Types.ObjectId()
+            });
+    
+            req.avatar = result.url;
+        }
+        next();
+    }
+    catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     userAuth,
     signUpValidations,
-    loginValidation
+    loginValidation,
+    imageUpload
 }

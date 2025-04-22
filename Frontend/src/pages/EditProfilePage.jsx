@@ -1,16 +1,15 @@
 
-// src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { format, formatDistanceToNow } from 'date-fns'; // Need formatDistanceToNow for 'Member for'
 import { BASE_URL } from '../utils/constants';
 import Loading from '../components/Loading';
+import { addUser } from '../store/userSlice';
 
 // --- Icons & Components ---
 const EditProfileIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>;
-const UserAvatar = ({ src, alt, size = "w-24 h-24" }) => <img className={`rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-700 ${size}`} src={src} alt={alt} />; // Added border
 const ReputationIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1 text-yellow-500"><path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.39-3.463 3.38.82 4.646 4.28 2.147 2.451 4.305c.216.38.74.38.956 0l2.451-4.305 4.28-2.147.82-4.646-3.463-3.38-4.753-.39-1.83-4.401zM10 14.118a4.118 4.118 0 100-8.236 4.118 4.118 0 000 8.236z" clipRule="evenodd" /></svg>; // Example Star/Rep Icon
 const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1 text-gray-400 dark:text-gray-500"><path fillRule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clipRule="evenodd" /></svg>;
 
@@ -22,12 +21,13 @@ function EditProfilePage() {
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
     const [avatar, setAvatar] = useState("");
-    console.log(typeof avatar);
-    
+    const [avatarUrl, setAvatarUrl] = useState("");
 
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const dispatch = useDispatch();
 
     
      useEffect(() => {
@@ -49,22 +49,23 @@ function EditProfilePage() {
         fetchUserProfile();
     }, [ profileUserId, loggedInUser?._id ]);
 
-    console.log(avatar);
-
     const handleUpdate = () => {
         const formData = new FormData();
-        formData.append("image", avatar);
+        formData.append("image", avatarUrl);
         formData.append("bio", bio);
         formData.append("username", username);
 
         setLoading(true);
 
-        axios.put(BASE_URL + `/api/users/${profileUserId}`, {bio} ,{
-            headers: { Authorization: `bearer ${token}` }
+        axios.put(BASE_URL + `/api/users/${profileUserId}`, formData ,{
+            headers: { Authorization: `bearer ${token}` },
+            'Content-Type': 'multipart/form-data'
         })
         .then((res) => {
             setLoading(false);
             console.log(res);
+            dispatch(addUser(res.data.user));
+            navigate(`/profile/${profileUserId}`);
         })
         .catch((err) => {
             setLoading(false);
@@ -75,10 +76,10 @@ function EditProfilePage() {
     const handleImage = (e) => {
         const file = e.target.files[0];
         setAvatar(URL.createObjectURL(file))
+        setAvatarUrl(file);
     };
 
 
-    if (loading) return <div className="p-6 text-center"> Loading profile... </div>;
     if (error) return <div className="p-6 text-center text-red-500 ..."> Error: {error}</div>;
     if (!profileData) return <div className="p-6 text-center"> User profile not found. </div>;
 
@@ -92,19 +93,17 @@ function EditProfilePage() {
                     <div type='file' className="relative flex-shrink-0 mb-4 sm:mb-0 -mt-12 sm:-mt-16 rounded-full">
                         <img className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-700" src={avatar} alt="profile" />
                         <label className="absolute bottom-0 right-1 bg-white dark:bg-gray-800 p-1.5 rounded-full shadow cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-600 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M17.414 2.586a2 2 0 010 2.828l-10 10A2 2 0 016 16H4a1 1 0 01-1-1v-2a2 2 0 01.586-1.414l10-10a2 2 0 012.828 0z" />
-                            </svg>
+                            <EditProfileIcon/>
 
                             <input
                                 type="file"
+                                name='image'
                                 accept="image/*"
                                 className="hidden"
                                 onChange={handleImage}
                             />
                         </label>
                     </div>
-                    
                     
                     <div className="text-center sm:text-left flex-grow">
                         <input 

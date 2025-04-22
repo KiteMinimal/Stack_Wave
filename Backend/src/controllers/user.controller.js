@@ -51,7 +51,7 @@ const updateUserController = async function(req,res){
             })
         }
 
-        const allowUpdates = ["bio","avatar"];
+        const allowUpdates = ["bio","avatar","username"];
         const updates = {};
 
         Object.keys(req.body).forEach((key) => {
@@ -59,6 +59,10 @@ const updateUserController = async function(req,res){
                 updates[key] = req.body[key]
             }
         })
+
+        if(req.avatar){
+            updates.avatar = req.avatar;
+        }
 
         if(updates?.bio && updates.bio.length > 100){
             return res.status(400).json({

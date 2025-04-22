@@ -29,6 +29,7 @@
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.6.3",
+    "imagekitio-react": "^4.3.0",
     "lucide-react": "^0.486.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
