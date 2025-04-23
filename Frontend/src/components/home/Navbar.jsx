@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { logoutUser } from "../../store/userSlice";
 import { toggleTheme } from "../../store/themeSlice";
@@ -12,6 +12,7 @@ const Navbar = () => {
   const { user, token } = useSelector((state) => state.user);
   const [dropdown,setDropDown] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const getNavLinkClass = ({ isActive }) =>
     `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
@@ -25,12 +26,13 @@ const Navbar = () => {
       headers: {Authorization: `bearer ${token}`}
     })
     .then((res) => {
+      dispatch(logoutUser());
+      navigate("/");
       toast.success(res.data.message)
     })
     .catch((err) => {
       toast.error(err.response.data.message)
     })
-    dispatch(logoutUser());
   }
 
   return (
@@ -70,14 +72,14 @@ const Navbar = () => {
             className={`hidden bg-transparent md:block input input-bordered w-28 md:w-96 dark:border dark:border-white`}
           />
 
-            <div className={`dropdown dropdown-end dark:text-white""`}>
+            <div className={`dropdown dropdown-end dark:text-white`}>
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full dark:bg-gray-700">
                   <img alt="profile photo" src={user.avatar} />
                 </div>
               </div>
 
-              <ul tabIndex={0} className={`menu menu-sm dropdown-content dark:bg-black "bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow`}>
+              <ul tabIndex={0} className={`menu bg-white menu-sm dropdown-content dark:bg-black "bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow`}>
                 <li>
                   <Link to={`/profile/${user._id}`} className="justify-between">
                     Profile
