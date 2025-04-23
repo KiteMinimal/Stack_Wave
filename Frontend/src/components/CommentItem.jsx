@@ -120,12 +120,38 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
         }
     };
 
-    const handleShowReplies = () => {
-        setShowReplies(true);
+    const fetchReplies = () => {
+        if (isLoadingReplies) return;
         setIsLoadingReplies(true);
+        setReplyError(null);
 
-        axios.get(BASE_URL + `/api/auth/comments`)
+        axios.get(BASE_URL + `/api/comments/${commentId}/replies`,{
+            headers: {Authorization: `bearer ${token}`}
+        })
+        .then((res) => {
+            console.log(res);
+            setIsLoadingReplies(false);
+            setReplies(res.data.replies);
+        })
+        .catch((err) => {
+            console.log(err);
+            setIsLoadingReplies(false);
+            setReplyError(err.response.data.message)
+        })
+    }
 
+    const handleToggleReplies = () => {
+        const becomingVisible = !showReplies;
+        setShowReplies(becomingVisible);
+        if (becomingVisible && replies.length === 0 && replyCount > 0) {
+            fetchReplies();
+        }
+    };
+
+    const handleReplyUpdated = (updatedReply) => {
+        setReplies(prevReplies => prevReplies.map(reply =>
+            reply._id === updatedReply._id ? updatedReply : reply
+        ));
     }
 
     const isOwner = loggedInUser && author && loggedInUser._id === author._id;
@@ -186,10 +212,34 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
                              <span title={new Date(createdAt).toLocaleString()}>
                                  {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : ''}
                              </span>
-                            <button onClick={handleShowReplies} className='hover:underline inline-flex items-center cursor-pointer'>Show Replies {replyCount} </button>
+                            <button onClick={handleToggleReplies} className='hover:underline inline-flex items-center cursor-pointer'>Show Replies  </button>
                          </div>
                     </>
                 )}
+
+
+                {showReplies && (
+                    <div className="mt-2 space-y-2">
+                        {isLoadingReplies && <p className="text-xs text-gray-400 italic ml-4">Loading replies...</p>}
+                        {replyError && <p className="text-xs text-red-500 ml-4">{replyError}</p>}
+                        {!isLoadingReplies && !replyError && replies.length > 0 && (
+                            replies.map(reply => (
+                                <CommentItem
+                                    key={reply._id}
+                                    comment={reply}
+                                    loggedInUser={loggedInUser}
+                                    token={token}
+                                    onCommentDeleted={() => fetchReplies()}
+                                    onCommentUpdated={handleReplyUpdated}
+                                    onReply={onReply}
+                                    level={level + 1}
+                                />
+                            ))
+                        )}
+                        {!isLoadingReplies && !replyError && replies.length === 0 && replyCount > 0 && <p className="text-xs text-gray-400 italic ml-4">No replies found.</p>}
+                    </div>
+                )}
+
             </div>
 
              {/* Delete Confirmation */}

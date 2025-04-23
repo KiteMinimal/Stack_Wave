@@ -251,7 +251,7 @@ const getReply = async function(req,res){
             })
         }
 
-        const replies = await commentModel.find({parentComment: commentId});
+        const replies = await commentModel.find({parentComment: commentId}).populate("authorId","username avatar");
 
         res.status(200).json({
             message: "replies found",

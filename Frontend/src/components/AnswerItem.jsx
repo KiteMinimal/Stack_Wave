@@ -525,7 +525,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
               >
                 <CommentIcon />
                 <span className="ml-1">
-                  {showComments ? "Hide" : "Show"} Comments{" "} ({commentCounts})
+                  {showComments ? "Hide" : "Show"} Comments{" "} 
                 </span>
               </button>
             </div>
