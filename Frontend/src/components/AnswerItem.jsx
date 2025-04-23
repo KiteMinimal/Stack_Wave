@@ -11,7 +11,6 @@ import ConfirmationModal from "./ConfirmationModal";
 import MDEditor from "@uiw/react-md-editor";
 import CommentItem from "./CommentItem";
 import { BASE_URL } from "../utils/constants";
-import deleteComments from "../utils/deleteComment";
 
 
 const UpVoteIcon = ({ filled }) => (
@@ -141,6 +140,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
   const [currentVotes, setCurrentVotes] = useState(initialVotes);
   const [userVote, setUserVote] = useState(null);
   const [isVoting, setIsVoting] = useState(false);
+  const [commentCounts, setCommentCounts] = useState(commentCount);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(initialContent);
@@ -354,13 +354,15 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
 
       const postedComment = response.data?.comment;
       if (postedComment) {
-        // TODO: Need logic to add the new comment/reply to the correct place in the state
-        // For now, just refetch all comments to see the new one
         fetchComments();
+
+        if(!isReply){
+          setCommentCounts(prev => prev + 1)
+        }
         toast.success(isReply ? "Reply posted!" : "Comment added!");
       }
-      setNewComment(""); // Clear input
-      setReplyingTo(null); // Clear reply state
+      setNewComment("");
+      setReplyingTo(null);
     } catch (err) {
       console.error("Error posting comment/reply:", err);
       setCommentError(err.response?.data?.message || "Failed to post comment.");
@@ -523,7 +525,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
               >
                 <CommentIcon />
                 <span className="ml-1">
-                  {showComments ? "Hide" : "Show"} Comments{" "} ({commentCount})
+                  {showComments ? "Hide" : "Show"} Comments{" "} ({commentCounts})
                 </span>
               </button>
             </div>
@@ -577,7 +579,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
               key={comment._id} 
               comment={comment} 
               token={token} 
-              onCommentDeleted={(commentId) => deleteComments(commentId,setComments)}
+              onCommentDeleted={() => fetchComments()}
               onReply={(commentId, username) => handleTriggerReply(commentId, username)}
               loggedInUser={loggedInUser}
             />)}

@@ -70,7 +70,7 @@ const addAnswerController = async function(req,res){
         const answer = await answerModel.create({
             questionId,
             authorId: userId,
-            content
+            content,
         })
 
         const populatedAnswer = await answer.populate('authorId', 'username avatar');

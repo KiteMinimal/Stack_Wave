@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 
 const commentSchema = new mongoose.Schema({
+    
     answerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Answer",
@@ -23,7 +24,12 @@ const commentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Comment",
         default: null
+    },
+    replyCount: {
+        type: Number,
+        default: 0
     }
+
 },{ timestamps : true })
 
 const commentModel = mongoose.model("Comment", commentSchema);

@@ -29,7 +29,7 @@ const SimpleMarkdownComponents = {
 
 function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level = 0 }) {
 
-    const { content: initialContent, authorId: author , createdAt, _id: commentId, parentComment } = comment;
+    const { content: initialContent, authorId: author , createdAt, _id: commentId, parentComment, replyCount } = comment;
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -39,6 +39,11 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const [showReplies, setShowReplies] = useState(false);
+    const [replies, setReplies] = useState([]);
+    const [isLoadingReplies, setIsLoadingReplies] = useState(false);
+    const [replyError, setReplyError] = useState(null);
 
     // --- Edit Handlers ---
     const handleEditClick = () => { 
@@ -84,7 +89,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
         }
     };
 
-    // --- Delete Handlers ---
+
     const handleDeleteClick = () => setShowDeleteModal(true);
 
     const handleCancelDelete = () => setShowDeleteModal(false);
@@ -97,7 +102,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
                 headers: { Authorization: `bearer ${token}` }
             });
             setShowDeleteModal(false);
-            if (onCommentDeleted) onCommentDeleted(commentId);
+            if (onCommentDeleted) onCommentDeleted();
             toast.success("Comment deleted");
         } catch (err) {
             console.error("Error deleting comment:", err);
@@ -114,6 +119,14 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
             onReply(commentId, author.username);
         }
     };
+
+    const handleShowReplies = () => {
+        setShowReplies(true);
+        setIsLoadingReplies(true);
+
+        axios.get(BASE_URL + `/api/auth/comments`)
+
+    }
 
     const isOwner = loggedInUser && author && loggedInUser._id === author._id;
 
@@ -155,24 +168,25 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
                         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5">
                              <Link to={`/profile/${author?._id}`} className="font-semibold text-gray-900 dark:text-white hover:underline mr-1">{author?.username}</Link>
                             <span className="text-gray-700 dark:text-gray-300">
-                                {/* Render simple markdown or just plain text */}
+                                
                                 <ReactMarkdown components={SimpleMarkdownComponents} remarkPlugins={[remarkGfm]}>
                                     {currentContent}
                                 </ReactMarkdown>
                             </span>
                         </div>
-                         {/* Actions: Reply, Edit, Delete, Time */}
+                         
                          <div className="flex items-center space-x-3 mt-1 px-1 text-gray-500 dark:text-gray-400">
-                            <button onClick={handleReplyClick} className="hover:underline inline-flex items-center"> <ReplyIcon /> Reply </button>
+                            {level <= 2 && <button onClick={handleReplyClick} className="hover:underline inline-flex items-center cursor-pointer"> <ReplyIcon /> Reply </button> }
                              {isOwner && (
                                  <>
-                                     <button onClick={handleEditClick} className="hover:underline">Edit</button>
-                                     <button onClick={handleDeleteClick} className="hover:underline text-red-500/80 hover:text-red-600">Delete</button>
+                                     <button onClick={handleEditClick} className="hover:underline cursor-pointer">Edit</button>
+                                     <button onClick={handleDeleteClick} className="hover:underline text-red-500/80 hover:text-red-600 cursor-pointer">Delete</button>
                                  </>
                              )}
                              <span title={new Date(createdAt).toLocaleString()}>
                                  {createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : ''}
                              </span>
+                            <button onClick={handleShowReplies} className='hover:underline inline-flex items-center cursor-pointer'>Show Replies {replyCount} </button>
                          </div>
                     </>
                 )}

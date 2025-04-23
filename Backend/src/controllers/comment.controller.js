@@ -14,7 +14,12 @@ const getAllComments = async function(req,res){
             })
         }
 
-        const comments = await commentModel.find({ answerId }).populate("authorId",'username avatar').sort({ createdAt: 1 });
+        const comments = await commentModel.find({
+            $and: [
+                { answerId: answerId }, { parentComment: null }
+            ]
+         }).populate("authorId",'username avatar').sort({ createdAt: 1 });
+
         if(!comments){
             return res.status(400).json({
                 message: "No comment found"
@@ -212,6 +217,9 @@ const createReply = async function(req,res){
             parentComment: parentCommentId
         })
 
+        parentComment.replyCount++;
+        await parentComment.save();
+
         const populatedReply = await commentModel.findById(comment._id).populate('authorId', 'username avatar');
 
         res.status(201).json({
@@ -229,6 +237,26 @@ const createReply = async function(req,res){
 
 const getReply = async function(req,res){
     try{
+        const commentId = req.params?.commentId;
+        if(!commentId){
+            return res.status(400).json({
+                message: "CommentId is required"
+            })
+        }
+
+        const isCommentExist = await commentModel.findById(commentId);
+        if(!isCommentExist){
+            return res.status(404).json({
+                message: "Comment not found"
+            })
+        }
+
+        const replies = await commentModel.find({parentComment: commentId});
+
+        res.status(200).json({
+            message: "replies found",
+            replies
+        })
 
     }
     catch(err){
