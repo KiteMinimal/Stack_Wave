@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import atomDark from "react-syntax-highlighter/dist/esm/styles/prism/atom-dark";
 import ConfirmationModal from "./ConfirmationModal";
 import MDEditor from "@uiw/react-md-editor";
 import CommentItem from "./CommentItem";
