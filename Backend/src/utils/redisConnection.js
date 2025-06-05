@@ -1,4 +1,3 @@
-
 const { Redis } = require("ioredis")
 const config = require("../config/config")
 
@@ -8,7 +7,7 @@ const redis = new Redis({
     password: config.REDIS_PASSWORD
 })
 
-redis.connect(() => {
+redis.on('connect', () => {
     console.log("Redis connected");
 })
 

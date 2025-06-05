@@ -1,10 +1,12 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const morgon = require("morgan");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(morgon("dev"));
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
