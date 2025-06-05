@@ -223,7 +223,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
       setUserVote(optimisticUserVote);
 
       try {
-        const apiUrl = `${BASE_URL}/api/answers/${
+        const apiUrl = `${import.meta.env.VITE_API_URL}/api/answers/${
           voteType === "up" ? "upVote" : "downVote"
         }/${answerId}`;
         const response = await axios.post(
@@ -309,7 +309,7 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
     setCommentError(null);
     console.log("Fetching comments for answer:", answerId);
     try {
-      const response = await axios.get(`${BASE_URL}/api/comments/${answerId}`,{
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/comments/${answerId}`,{
         headers: {Authorization: `bearer ${token}`}
       });
       setComments(response.data?.comments || []);
@@ -342,8 +342,8 @@ function AnswerItem({ answer, questionId, loggedInUser, token, onAnswerDeleted }
     const content = newComment.trim();
     const isReply = !!replyingTo;
     const url = isReply
-      ? `${BASE_URL}/api/comments/${replyingTo.commentId}/replies`
-      : `${BASE_URL}/api/comments/${answerId}`;
+      ? `${import.meta.env.VITE_API_URL}/api/comments/${replyingTo.commentId}/replies`
+      : `${import.meta.env.VITE_API_URL}/api/comments/${answerId}`;
 
     const payload = { content };
 

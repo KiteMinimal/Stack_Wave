@@ -28,7 +28,7 @@ function ProfilePage() {
         const fetchUserProfile = async () => {
             setLoading(true); setError(null);
             try {
-                const response = await axios.get(`${BASE_URL}/api/users/${profileUserId}`,{
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${profileUserId}`,{
                     headers: {Authorization: `bearer ${token}`}
                 });
                 if (response.data && response.data.user) { setProfileData(response.data.user); }

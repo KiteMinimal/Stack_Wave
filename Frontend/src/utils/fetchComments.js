@@ -1,11 +1,9 @@
-
 import axios from "axios";
-import { BASE_URL } from "./constants";
 
 
 export async function fetchComments(answerId, token) {
     try {
-        const res = await axios.get(`${BASE_URL}/api/comments/${answerId}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/comments/${answerId}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         return res.data.comments;

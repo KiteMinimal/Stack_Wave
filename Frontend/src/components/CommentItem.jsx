@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -67,7 +66,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
         setEditError(null);
 
         try {
-            const response = await axios.put(`${BASE_URL}/api/comments/${commentId}`,
+            const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/comments/${commentId}`,
                { content: editedContent },
                { headers: { Authorization: `bearer ${token}` } }
             );
@@ -98,7 +97,7 @@ function CommentItem({ comment,loggedInUser,token,onCommentDeleted,onReply,level
         if (isDeleting) return;
         setIsDeleting(true);
         try {
-            await axios.delete(`${BASE_URL}/api/comments/${commentId}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/comments/${commentId}`, {
                 headers: { Authorization: `bearer ${token}` }
             });
             setShowDeleteModal(false);

@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import MDEditor from '@uiw/react-md-editor';
 import axios from 'axios';
-import { BASE_URL } from '../utils/constants';
 
 function AskPage() {
   const navigate = useNavigate();
@@ -50,7 +48,7 @@ function AskPage() {
     console.log('Submitting question:', questionData);
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/questions`, questionData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/questions`, questionData, {
         headers: { Authorization: `bearer ${token}` }
       });
 

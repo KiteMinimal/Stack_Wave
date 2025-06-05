@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -24,7 +23,7 @@ function EditQuestionPage() {
     const fetchQuestionData = async () => {
       setError(null);
       try {
-        const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`, {headers: {Authorization: `bearer ${token}`}});
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`, {headers: {Authorization: `bearer ${token}`}});
         const questionData = response.data?.question;
         if (!questionData) {
           throw new Error("Question not found.");
@@ -72,7 +71,7 @@ function EditQuestionPage() {
 
 
     try {
-      const response = await axios.put(`${BASE_URL}/api/questions/${questionId}`, questionData, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`, questionData, {
         headers: { Authorization: `bearer ${token}` }
       });
 

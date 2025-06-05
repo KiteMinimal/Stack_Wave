@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -65,7 +64,7 @@ function QuestionDetailsPage() {
     const fetchQuestionDetails = async () => {
       setError(null);
       try {
-        const response = await axios.get(`${BASE_URL}/api/questions/${questionId}`,{
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`,{
           headers: {Authorization: `bearer ${token}`}
         });
 
@@ -114,7 +113,7 @@ function QuestionDetailsPage() {
       setAnswerError(null);
 
       try {
-        const response = await axios.post(`${BASE_URL}/api/answers/${questionId}`,
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/answers/${questionId}`,
            { content: newAnswerBody },
            { headers: { Authorization: `bearer ${token}` } }
         );
@@ -165,7 +164,7 @@ function QuestionDetailsPage() {
     setIsDeleting(true);
     setDeleteError(null);
     try {
-       await axios.delete(`${BASE_URL}/api/questions/${questionId}`, {
+       await axios.delete(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`, {
            headers: { Authorization: `bearer ${token}` }
        });
       setShowDeleteConfirm(false);

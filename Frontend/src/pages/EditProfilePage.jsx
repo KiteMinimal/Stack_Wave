@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -34,7 +33,7 @@ function EditProfilePage() {
         const fetchUserProfile = async () => {
             setLoading(true); setError(null);
             try {
-                const response = await axios.get(`${BASE_URL}/api/users/${profileUserId}`,{
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${profileUserId}`,{
                     headers: {Authorization: `bearer ${token}`}
                 });
                 setProfileData(response.data?.user);

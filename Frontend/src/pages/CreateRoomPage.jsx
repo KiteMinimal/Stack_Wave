@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -67,7 +66,7 @@ function CreateRoomsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${BASE_URL}/api/room/create`,
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/room/create`,
         { name: roomName, language },
         { headers: { Authorization: `bearer ${token}` } }
       );
